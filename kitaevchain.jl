@@ -109,5 +109,5 @@ let
     for (j,nc) in enumerate(density)
         println("density on site $j is \t $nc")
     end
-end
+end  sso
 =#
