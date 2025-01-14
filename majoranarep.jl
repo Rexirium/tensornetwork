@@ -11,9 +11,4 @@ let
     setmaxdim!(sw,100)
     setcutoff!(sw,1E-14)
     krydim=4
-
-    function KitaevChain_Majorana(s::Vector{Index{Int64}}, mu::Float64,tt::Float64,delta::Number)
-        Ns=length(s)
-        os=OpSum()
-    end
 end
