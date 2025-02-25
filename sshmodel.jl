@@ -27,18 +27,6 @@ function entangle_entropy(psi::MPS, b::Int)
     return SvN
 end
 
-#construct Hamiltonian#
-function SSH_OBC(s::Vector{Index{Int64}},t1::Float64,t2::Float64) 
-    Ns=length(s)
-    os=OpSum()
-    for j in 1:Ns-1
-        t= isodd(j) ? t1 : t2
-        os += t, "Cdag",j,   "C",j+1
-        os += t, "Cdag",j+1, "C",j
-    end
-    Hamil=MPO(os, s)
-    return Hamil
-end
 #inspect entanglement entropy after each sweep of DMRG
 function ITensorMPS.measure!(O::EntangleObserver; psi,sweep_is_done,kwargs...)
     if sweep_is_done
@@ -47,8 +35,76 @@ function ITensorMPS.measure!(O::EntangleObserver; psi,sweep_is_done,kwargs...)
         println("  von Neumann SvN=$SvN")
     end
 end
+
+#construct Hamiltonian#
+function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number) 
+    Ns=length(s)
+    os=OpSum()
+    for j in 1:Ns-1
+        t= isodd(j) ? t1 : t2
+        os += t, "Cdag",j, "C",j+1
+        os += t', "Cdag",j+1, "C",j
+    end
+    return MPO(os, s)
+end
+
+function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number, u::Real)
+    Ns=length(s)
+    os=OpSum()
+    for j in 1:Ns-1
+        if isodd(j)
+            os += u, "N", j
+            os += t1, "Cdag", j, "C", j+1
+            os += t1', "Cdag", j+1, "C", j
+        else
+            os += -u, "N", j
+            os += t2, "Cdag", j, "C", j+1
+            os += t2', "Cdag", j+1, "C", j
+        end
+    end
+    os += -u, "N", Ns
+    return MPO(os,s)
+end
+
+function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number, V::Vector{<:Real})
+    Ns=length(s)
+    os=OpSum()
+    for j in 1:Ns-1
+        if isodd(j)
+            os += t1, "Cdag", j, "C", j+1
+            os += t1', "Cdag", j+1, "C", j
+            os += V[1], "N", j, "N", j+1
+        else
+            os += t2, "Cdag", j, "C", j+1
+            os += t2', "Cdag", j+1, "C", j
+            os += V[2], "N", j, "N", j+1
+        end
+    end
+    return MPO(os,s)
+end
+
+function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number,u::Real,V::Vector{<:Real})
+    Ns=length(s)
+    os=OpSum()
+    for j in 1:Ns-1
+        if isodd(j)
+            os += u, "N", j
+            os += t1, "Cdag", j, "C", j+1
+            os += t1', "Cdag", j+1, "C", j
+            os += V[1], "N", j, "N", j+1
+        else
+            os += -u, "N", j
+            os += t2, "Cdag", j, "C", j+1
+            os += t2', "Cdag", j+1, "C", j
+            os += V[2], "N", j, "N", j+1
+        end
+    end
+    os += -u, "N", Ns
+    return MPO(os,s)
+end
+
 # evolution gates of ITE
-function SSH_gate(s::Vector{Index{Int64}},t1::Float64,t2::Float64,dt::Float64)
+function SSH_gate(s::Vector{Index{Int}},t1::Number,t2::Number,dt::Float64)
     Ns=length(s)
     gates=ITensor[]
     A1=evolmatrix(t1*dt/2)
@@ -80,21 +136,65 @@ function ImaginaryTimeEvolve(Hamil::MPO, gates::Vector{ITensor} ,psi::MPS,evolst
     energy=inner(psi',Hamil,psi)
     return energy, psi
 end
+
 # Exact diagonalization
-function SSH_band(t1::Float64,t2::Float64,k::Float64)
-    return sqrt(t1*t1+t2*t2+2*t1*t2*cos(k))
+function SSH_block(t1::Number,t2::Number,k::Float64;form=:array)
+    hx=real(t1)+abs(t2)*cos(k+angle(t2))
+    hy=-imag(t1)+abs(t2)*sin(k+angle(t2))
+    if form ==:matrix
+        return [0 hx-im*hy; hx+im*hy 0]
+    else
+        return [hx,hy]
+    end
 end
-function SSH_spec(Lsize::Int,t1::Float64,t2::Float64)
+
+function SSH_block(t1::Number,t2::Number,u::Real,k::Float64;form=:array)
+    hx=real(t1)+abs(t2)*cos(k+angle(t2))
+    hy=-imag(t1)+abs(t2)*sin(k+angle(t2))
+    if form ==:matrix
+        return [u hx-im*hy ; hx+im*hy -u]
+    else
+        return [hx,hy,u]
+    end
+end
+
+function SSH_band(t1::Number,t2::Number,k::Float64)
+    at1,at2=abs(t1),abs(t2)
+    phase=k+angle(t1)+angle(t2)
+    return sqrt(at1*at1+at2*at2+2*at1*at2*cos(phase))
+end
+function SSH_band(t1::Number,t2::Number,u::Real,k::Float64)
+    at1,at2=abs(t1),abs(t2)
+    phase=k+angle(t1)+angle(t2)
+    return sqrt(at1*at1+at2*at2+2*at1*at2*cos(phase)+u*u)
+end
+
+function SSH_spec(Lsize::Int,t1::Number,t2::Number)
     ks=range(-π,π,Int(Lsize/2))
     spectrum=SSH_band.(t1,t2,ks)
     sort(vcat(spectrum,-spectrum))
 end
+function SSH_spec(Lsize::Int,t1::Number,t2::Number,u::Real)
+    ks=range(-π,π,Int(Lsize/2))
+    spectrum=SSH_band.(t1,t2,u,ks)
+    sort(vcat(spectrum,-spectrum))
+end
 
-function SSH_spectrum(Lsize::Int,t1::Float64,t2::Float64;retstate::Bool=false)
+function SSH_spectrum_obc(Lsize::Int,t1::Number,t2::Number;retstate::Bool=false)
     Ncell=Int(Lsize/2)
-    arr=repeat([t1,t2],Ncell)
-    deleteat!(arr,Lsize)
-    Hamil=SymTridiagonal(zeros(Lsize),arr)
+    arr=repeat([t1,t2],Ncell)[1:Lsize-1]
+    Hamil=Hermitian(SymTridiagonal(zeros(Lsize),arr))
+    if retstate==false
+        return eigvals(Hamil)
+    else
+        return eigen(Hamil)
+    end
+end
+function SSH_spectrum_obc(Lsize::Int,t1::Number,t2::Number,u::Real;retstate::Bool=false)
+    Ncell = Int(Lsize/2)
+    darr=repeat([u,-u],Ncell)
+    uarr=repeat([t1,t2],Ncell)[1:Lsize-1]
+    Hamil=Hermitian(SymTridiagonal(darr,uarr))
     if retstate==false
         return eigvals(Hamil)
     else
@@ -102,128 +202,41 @@ function SSH_spectrum(Lsize::Int,t1::Float64,t2::Float64;retstate::Bool=false)
     end
 end
 
-function SSH_spectrum_pbc(Lsize::Int,t1::Float64,t2::Float64)
+function SSH_spectrum_pbc(Lsize::Int,t1::Number,t2::Number;retstate::Bool=false)
     Ncell=Int(Lsize/2)
-    arr=repeat([t1,t2],Ncell)
-    deleteat!(arr,Lsize)
+    arr=repeat([t1,t2],Ncell)[1:Lsize-1]
     Hamil=diagm(1=>arr)
-    Hamil[1,Lsize]=t2
+    Hamil[1,Lsize]=t2'
     Hamil=Hermitian(Hamil)
-    return eigvals(Hamil)
+    if retstate==false
+        return eigvals(Hamil)
+    else
+        return eigen(Hamil)
+    end
+end
+function SSH_spectrum_pbc(Lsize::Int,t1::Number,t2::Number;retstate::Bool=false)
+    Ncell=Int(Lsize/2)
+    darr=repeat([u,-u],Ncell)
+    uarr=repeat([t1,t2],Ncell)[1:Lsize-1]
+    Hamil=diagm(0=>darr,1=>uarr)
+    Hamil[1,Lsize]=t2'
+    Hamil=Hermitian(Hamil)
+    if retstate==false
+        return eigvals(Hamil)
+    else
+        return eigen(Hamil)
+    end
 end
 
-function SSH_ED(Lsize::Int,t1::Float64,t2::Float64,FermiLevel::Float64=0.0)
-    spec=SSH_spectrum(Lsize,t1,t2)
-    energy=sum(spec[spec[:].<=FermiLevel])
+function SSH_ED(Lsize::Int,t1::Number,t2::Number,mu::Real=0.0)
+    spec=SSH_spectrum_obc(Lsize,t1,t2)
+    energy=sum(spec[spec[:].<=mu])
     return energy
 end
-#=
-let
-    L,D=40,5
-    v,w=2.0,1.0
-    vs=range(0.0,3.0,61)
-    b_ent=Int(L/2)
-    method="ite"
-    #DMRG parameters
-    sw=Sweeps(15)
-    setmaxdim!(sw,100)
-    setcutoff!(sw,1E-14)
-    krydim=4
-    obs=EntangleObserver(b_ent)
-    # ITE parameters
-    cutoff=1.0E-12
-    finaltemp=0.1
-    tau=0.01
-    steps=Int(1/finaltemp/tau)
-    # initialize state
-    state=[]
-    for j in 1:L
-        if isodd(j)
-            push!(state,"1")
-        else
-            push!(state,"0")
-        end
-    end
-    sites=siteinds("Fermion",L;conserve_qns=false)
-    psi0=random_mps(sites;linkdims=D)
-    Hssh=SSH_OBC(sites,v,w)
-    sshgate=SSH_gate(sites,v,w,tau)
-
-    SSH_ED(L,v,w)
-    println("-------------------------------------------------------------")
-    if method=="dmrg"
-        println("Running DMRG for $L sites SSH model with v =$v, w=$w")
-        energy,psi=dmrg(Hssh,psi0,sw;observer=obs,eigsolve_krylovdim=krydim,outputlevel=1)
-    elseif method=="ite"
-        println("Running ITE for $L sites SSH model with v =$v, w=$w")
-        energy,psi =ImaginaryTimeEvolve(Hssh,sshgate,psi0,steps,cutoff)
-    end
-    println("-------------------------------------------------------------")
- 
-    H2=inner(Hssh,psi,Hssh,psi)
-    varsq=H2-energy*energy
-    density=expect(psi,"N")
-    SvN=entangle_entropy(psi,Int(L/2))
-    println("ground state energy is $energy  variance of energy is $varsq")
-    println("entanglement entropy across middle bond is $SvN \n")
-    for (j,nc) in enumerate(density)
-        println("density on site $j is \t $nc")
-    end
-    
-    data=transpose(hcat(SSH_spectrum.(L,vs,w)...))
-    plot(vs,data,w=1,leg=false,xlabel=L"v",framestyle=:box)
-    yaxis!("energy",minorgrid=true)
-    vline!([1.0],line=(1,:dash))
-    annotate!([(0.5,-3,(L"w=1"))])
-    savefig("figures/spectrum.pdf")
-
+function SSH_ED(Lsize::Int,t1::Number,t2::Number,u::Real,mu::Real=0.0)
+    spec=SSH_spectrum_obc(Lsize,t1,t2,u)
+    energy=sum(spec[spec[:].<=mu])
+    return energy
 end
 
-let 
-    L,D=40,6
-    w=1.0
-    vs=range(0.0,3.0,11)
-    b_ent=Int(L/2)
-    #DMRG parameters
-    sw=Sweeps(15)
-    setmaxdim!(sw,100)
-    setcutoff!(sw,1E-14)
-    krydim=4
-    obs=EntangleObserver(b_ent)
-    # ITE parameters
-    cutoff=1.0E-12
-    finaltemp=0.1
-    tau=0.02
-    steps=Int(1/finaltemp/tau)
-    # initialize state
-    state=[]
-    for j in 1:L
-        if isodd(j)
-            push!(state,"1")
-        else
-            push!(state,"0")
-        end
-    end
-    sites=siteinds("Fermion",L;conserve_qns=false)
-    psi0=random_mps(sites;linkdims=D)
-
-    energys=[]
-    SvNs=[]
-    for v in vs
-        energy_ED=SSH_ED(L,v,w)
-        Hssh=SSH_OBC(sites,v,w)
-        sshgate=SSH_gate(sites,v,w,tau)
-        energy_DMRG,psi_DMRG=dmrg(Hssh,psi0,sw;eigsolve_krylovdim=krydim,outputlevel=0)
-        energy_ITE,psi_ITE=ImaginaryTimeEvolve(Hssh,sshgate,psi0,steps;cutoff=cutoff,display=false)
-        SvN_DMRG=entangle_entropy(psi_DMRG,b_ent)
-        SvN_ITE=entangle_entropy(psi_ITE,b_ent)
-        push!(energys,[energy_DMRG,energy_ITE,energy_ED])
-        push!(SvNs,[SvN_DMRG,SvN_ITE])
-    end
-    energys=transpose(hcat(energys...))
-    SvNs=transpose(hcat(SvNs...))
-    plot(vs,energys,line=[:solid :solid :dash],lab=["DMRG" "ITE" "ED"])
-
-end
-=#
 

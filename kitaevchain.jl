@@ -1,5 +1,4 @@
-using ITensors, ITensorMPS
-using LinearAlgebra
+include("majorana.jl")
 
 mutable struct EntangleObserver <: AbstractObserver
     bond::Int
@@ -27,15 +26,7 @@ function ITensorMPS.measure!(O::EntangleObserver; psi,sweep_is_done,kwargs...)
     end
 end
 
-ITensors.op(::OpName"Beta",::SiteType"Fermion")=[0 1 ; 1 0]
-ITensors.op(::OpName"Gamma",::SiteType"Fermion")=[0 -im ; im 0]
-ITensors.op(::OpName"Id",::SiteType"Fermion")=[1 0; 0 1]
-    
-ITensors.has_fermion_string(::OpName"Beta",::SiteType"Fermion")=true
-ITensors.has_fermion_string(::OpName"Gamma",::SiteType"Fermion")=true
-ITensors.has_fermion_string(::OpName"Id",::SiteType"Fermion")=false
-
-function KitaevChainSpectrum(Ls::Int,mu::Float64,tt::Float64,delta::Number)
+function KitaevChainSpectrum(Ls::Int,mu::Real,tt::Real,delta::Number)
     Ns=2*Ls
     ev1=repeat([mu,tt+delta],Ls)[1:Ns-1]
     ev3=repeat([0,-tt+delta],Ls-1)[1:Ns-3]
@@ -44,13 +35,13 @@ function KitaevChainSpectrum(Ls::Int,mu::Float64,tt::Float64,delta::Number)
     return eigvals(Ham)
 end
 
-function KitaevChainED(Ls::Int,mu::Float64,tt::Float64,delta::Number)
+function KitaevChainED(Ls::Int,mu::Real,tt::Real,delta::Number)
     spec=KitaevChainSpectrum(Ls,mu,tt,delta)
     energy=sum(spec[spec[:].<=mu])
     return energy
 end
 
-function KitaevChain(s::Vector{Index{Int64}}, mu::Float64,tt::Float64,delta::Number)
+function KitaevChain(s::Vector{Index{Int}}, mu::Real,tt::Real,delta::Number)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns
@@ -63,26 +54,63 @@ function KitaevChain(s::Vector{Index{Int64}}, mu::Float64,tt::Float64,delta::Num
         os+= delta, "C",j, "C", j+1
         os+= delta',"Cdag",j+1, "Cdag", j
     end      
-    Hamil=MPO(os,s)
-    return Hamil
+    return MPO(os,s)
 end
-function KitaevChainMF(s::Vector{Index{Int64}}, mu::Float64, tt::Float64, delta::Float64)
+
+function KitaevChain(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Number, V::Real)
+    Ns = length(s)
+    os = OpSum()
+    for j in 1:Ns
+        os += -mu, "N", j
+        os += mu/2, "Id", j
+    end
+    for j in 1:Ns-1
+        os += -tt, "Cdag", j, "C", j+1
+        os += -tt, "Cdag", j+1, "C", j
+        os += delta, "C", j, "C", j+1
+        os += delta', "Cdag", j+1, "Cdag", j
+        os += V, "N", j, "N", j+1
+    end
+    return MPO(os,s)
+end
+
+function KitaevChainMF(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Float64)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns
-        os+=-im*mu/2, "Beta", j, "Gamma", j
+        os+=-im*mu/2, "Gamma1", j, "Gamma2", j
     end
     for j in 1:Ns-1
-        os+=im*(tt+delta)/2, "Gamma", j, "Beta", j+1
-        os+=im*(-tt+delta)/2, "Beta", j, "Gamma", j+1
+        os+=im*(tt+delta)/2, "Gamma2", j, "Gamma1", j+1
+        os+=im*(-tt+delta)/2, "Gamma1", j, "Gamma2", j+1
     end
-    Hamil=MPO(os,s)
-    return Hamil
+    return MPO(os,s)
 end
-#=
+
+function KitaevChainMF(s::Vector{Index{Int}}, mu::Real,tt::Real,delta::Number, V::Real)
+    Ns=length(s)
+    os=OpSum()
+    os += V/4, "Id", 1
+    for j in 1:Ns
+        if j==1 || j==Ns
+            os += im*(-mu/2+V/4), "Gamma1", j, "Gamma2", j
+        else
+            os += im*(-mu+V)/2, "Gamma1", j, "Gamma2", j
+            os += V/4, "Id", j
+        end
+    end
+    for j in 1:Ns-1
+        os += V/4, "Id", j
+        os += im*(tt+delta)/2, "Gamma2", j, "Gamma1", j+1
+        os += im*(-tt+delta)/2, "Gamma1", j, "Gamma2", j+1
+        os += V/4, "Gamma1" ,j, "Gamma1" ,j+1, "Gamma2" ,j, "Gamma2", j+1
+    end
+    return MPO(os,s)
+end
+
 let
-    L,D=40,6
-    μ, t, Δ =1.0,2.0,0.5
+    L,D=40,5
+    μ, t, Δ = -4.0, 1.0, 1.0
     b_ent=Int(L/2)
 
     sw=Sweeps(15)
@@ -96,10 +124,10 @@ let
     psi0=random_mps(sites;linkdims=D)
 
     println("-----------------------------------------------------------------")
-    println("Running DMRG for $L sites Kitaev chain with μ =$μ, t=$t, Δ=$Δ")
+    println("Running DMRG for $L sites Kitaev chain with μ = $μ, t = $t, Δ = $Δ")
     energy, psi=dmrg(Hkc,psi0,sw;observer=obs,eigsolve_krylovdim=krydim,outputlevel=1)
     println("-----------------------------------------------------------------")
-
+    #=
     H2=inner(Hkc,psi,Hkc,psi)
     varsq=H2-energy*energy
     density=expect(psi,"N")
@@ -109,5 +137,5 @@ let
     for (j,nc) in enumerate(density)
         println("density on site $j is \t $nc")
     end
-end  ss
-=#
+    =#
+end  
