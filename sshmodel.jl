@@ -3,15 +3,8 @@ using LinearAlgebra
 
 mutable struct EntangleObserver <: AbstractObserver
     bond::Int
-    EntangleObserver(bond=1)=new(bond)
-end
-# construct evolution gates
-function evolmatrix(arg::Float64)
-    c,s =cosh(arg),sinh(arg)
-    X = [c -s; -s c]
-    A = [zeros(4);;[0.0 0.0]; X ; [0.0 0.0];;zeros(4)]
-    A[1,1],A[4,4]=1.0,1.0
-    return A
+    data::Vector{Any}
+    EntangleObserver(bond=1,data=[])=new(bond,data)
 end
 # calculate entanglement entropy
 function entangle_entropy(psi::MPS, b::Int)
@@ -26,14 +19,25 @@ function entangle_entropy(psi::MPS, b::Int)
     end
     return SvN
 end
-
 #inspect entanglement entropy after each sweep of DMRG
 function ITensorMPS.measure!(O::EntangleObserver; psi,sweep_is_done,kwargs...)
     if sweep_is_done
         b=O.bond
         SvN=entangle_entropy(psi,b)
-        println("  von Neumann SvN=$SvN")
+        D=maxlinkdim(psi)
+        push!(O.data,[SvN,D])
+        #println("  von Neumann entropy SvN = $SvN, max link dimension D = $D")
     end
+end
+
+
+# construct evolution gates
+function evolmatrix(arg::Float64)
+    c,s =cosh(arg),sinh(arg)
+    X = [c -s; -s c]
+    A = [zeros(4);;[0.0 0.0]; X ; [0.0 0.0];;zeros(4)]
+    A[1,1],A[4,4]=1.0,1.0
+    return A
 end
 
 #construct Hamiltonian#
@@ -214,7 +218,7 @@ function SSH_spectrum_pbc(Lsize::Int,t1::Number,t2::Number;retstate::Bool=false)
         return eigen(Hamil)
     end
 end
-function SSH_spectrum_pbc(Lsize::Int,t1::Number,t2::Number;retstate::Bool=false)
+function SSH_spectrum_pbc(Lsize::Int,t1::Number,t2::Number,u::Real;retstate::Bool=false)
     Ncell=Int(Lsize/2)
     darr=repeat([u,-u],Ncell)
     uarr=repeat([t1,t2],Ncell)[1:Lsize-1]
