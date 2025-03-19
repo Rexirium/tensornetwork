@@ -3,9 +3,9 @@ include("sshmodel.jl")
 
 #DMRG parameters
 sw=Sweeps(15)
-setmaxdim!(sw, 200)
-setcutoff!(sw, 1E-14)
-krydim=4
+setmaxdim!(sw, 100)
+setcutoff!(sw, 1E-12)
+krydim=3
 #=
 let 
     L, D = 40,5
@@ -29,8 +29,8 @@ end
 =#
 
 let 
-    L, D = 40, 5
-    v, w = 2.0, 1.0
+    L, D = 40, 4
+    v, w = 1.0, 1.0
     num = 10
     b = Int(L/2)
     Vs = LinRange(0.0, 2.0, num+1)
@@ -47,7 +47,7 @@ let
     for (i, V) in enumerate(Vs)
         for (j, W) in enumerate(Ws)
             Hint = SSH_obc(sites, v, w, [V*v, W*w])
-            energy, psi = dmrg(Hint, psi0, sw; outputlevel=0)
+            energy, psi = dmrg(Hint, psi0, sw; eigsolve_krylovdim = krydim, outputlevel=0)
             entropy = entangle_entropy(psi, b)
             energies[i,j] = energy
             entropies[i,j] = entropy
