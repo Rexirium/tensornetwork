@@ -1,5 +1,4 @@
 using HDF5
-using Printf
 include("sshmodel.jl")
 
 #DMRG parameters
@@ -8,19 +7,24 @@ setmaxdim!(sw,200)
 setcutoff!(sw,1E-14)
 krydim=4
 
-let
+let 
+    # fixed model parameters
     L,D=40,5
     w,b=1.0,Int(L/2)
     num,num_ite=50,5
     ratio=Int(num/num_ite)
+    # different intracell hopping v
     vs=LinRange(0.0,2.5,num+1)
-    vs_ite=LinRange(0.0,2.5,num_ite+1)
+    vs_ite=LinRange(0.0,2.5,num_ite+1) # intracell hopping for ITE algorithm
+    # define the site indices and the initial MPS
     sites=siteinds("Fermion",L;conserve_qns=false)
     psi0=random_mps(sites;linkdims=D)
+    # initialize the arrays to store data
     energies=zeros((num+1,2))
     entropies=zeros((num+1,2))
     densities=zeros((num+1,L))
     correlations=zeros((num+1,L))
+    # begin the loop to calculate under each intracell hopping v
     for (i,v) in enumerate(vs)
         energy_ED=SSH_ED(L,v,w)
         Hssh=SSH_obc(sites,v,w)
@@ -29,6 +33,7 @@ let
         ldim=maxlinkdim(psi_DMRG)
         density=expect(psi_DMRG,"N")
         nncorr=correlation_matrix(psi_DMRG,"N","N")[:,b]
+        # store the data to arrays
         energies[i,:]=[energy_DMRG,energy_ED]
         entropies[i,:]=[entropy,ldim]
         densities[i,:]=density
