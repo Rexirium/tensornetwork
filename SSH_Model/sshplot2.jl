@@ -2,8 +2,8 @@ using HDF5
 using Plots, LinearAlgebra
 using LaTeXStrings, Printf
 
-let 
-    file = h5open("sshplotdata.h5","r")
+P = let 
+    file = h5open("SSH_Model/sshplotdata.h5","r")
     vs = read(file,"vs")
     densities = read(file,"densities")
     correlations = read(file,"correlations")
@@ -19,3 +19,5 @@ let
     lay=@layout([a b])
     plot(p1,p2,layout=lay,size=(1000,400))
 end
+
+savefig(P, "SSH_Model/sshfigs/ssh_density_corr.pdf")

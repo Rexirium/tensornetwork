@@ -14,7 +14,7 @@ cg2=cgrad(:viridis, rev = false, categorical=false)
 
 # interaction in topological trivial phase
 P1 = let 
-    file = h5open("sshintdata.h5", "r")
+    file = h5open("SSH_Model/sshintdata.h5", "r")
     energies = read(file, "energiesv2.0w1.0")
     entropies = read(file, "entropiesv2.0w1.0")
     close(file)
@@ -33,7 +33,7 @@ end
 
 # interaction in topological non-trivial phase
 P2 = let 
-    file = h5open("sshintdata.h5", "r")
+    file = h5open("SSH_Model/sshintdata.h5", "r")
     energies = read(file, "energiesv1.0w2.0")
     entropies = read(file, "entropiesv1.0w2.0")
     close(file)
@@ -52,7 +52,7 @@ end
 
 # interaction in critical point
 P3 = let 
-    file = h5open("sshintdata.h5", "r")
+    file = h5open("SSH_Model/sshintdata.h5", "r")
     energies = read(file, "energiesv1.0w1.0")
     entropies = read(file, "entropiesv1.0w1.0")
     close(file)
@@ -69,5 +69,8 @@ P3 = let
     plot(p1,p2, layout = @layout([a b]),size = (800,400))
 end
 
+savefig(P3, "SSH_Model/sshfigs/sshinteract_crit.pdf")
 lay = @layout([a{0.45w} b{0.55w}])
-plot(P1,P2, layout=lay,size = (1000,800))
+P = plot(P1,P2, layout=lay,size = (1000,800))
+savefig(P, "SSH_Model/sshfigs/sshinteract.pdf")
+

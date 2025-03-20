@@ -50,6 +50,8 @@ p4=let
     plot(wavefunc,xlabel="site "*(L"n"),ylabel=L"\psi",ylim=(-0.4,0.6),framestyle=:box,w=1.5,label=labels)
     annotate!([(15,0.5,(L"v=0.5,w=1"))])
 end
+
 layout=@layout([a b;c d])
-plot(p1,p2,p3,p4,layout=layout,size=(800,600))
+P = plot(p1,p2,p3,p4,layout=layout,size=(900,700))
+savefig(P, "SSH_Model/sshfigs/ssh_spectrum.pdf")
 

@@ -2,8 +2,8 @@ using HDF5
 using Plots, LinearAlgebra
 using LaTeXStrings, Printf
 
-let 
-    file = h5open("sshplotdata.h5","r")
+P = let 
+    file = h5open("SSH_Model/sshplotdata.h5","r")
     vs = read(file,"vs")
     vs_ite = read(file, "vs_ite")
     energies = read(file, "energies")
@@ -24,3 +24,5 @@ let
     lay=@layout([a b ; c d])
     plot(p1,p3,p2,p4,layout=lay,size=(800,600))
 end
+
+savefig(P, "SSH_Model/sshfigs/ssh_gnd.pdf")
