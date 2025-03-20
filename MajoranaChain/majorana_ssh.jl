@@ -1,4 +1,4 @@
-include("majorana.jl")
+include("../majorana.jl")
 
 function majorana_hamiltonian(s::Vector{Index{Int}},t1::Real,t2::Real)
     Ns=length(s)
