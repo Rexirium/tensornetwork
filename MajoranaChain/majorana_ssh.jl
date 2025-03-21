@@ -1,4 +1,17 @@
+using LinearAlgebra
 include("../majorana.jl")
+
+function majorana_BdG(Ns::Int, t1::Real, t2::Real, retstate::Bool = false)
+    a, b = im*t1/2, im*t2/2
+    arr = repeat([a,b], Ns)
+    deleteat!(arr, 2*Ns)
+    hamil = Hermitian(diagm(1=>arr))
+    if retstate
+        return eigen(hamil)
+    else
+        return eigvals(hamil)
+    end
+end
 
 function majorana_hamiltonian(s::Vector{Index{Int}},t1::Real,t2::Real)
     Ns=length(s)

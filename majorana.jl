@@ -1,5 +1,4 @@
 using ITensors, ITensorMPS
-using LinearAlgebra
 
 function ITensors.space(
     ::SiteType"MF";
