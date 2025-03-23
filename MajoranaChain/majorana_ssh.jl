@@ -1,5 +1,7 @@
 using LinearAlgebra
-include("../majorana.jl")
+using ITensors, ITensorMPS
+include("../MajoranaRep.jl")
+using ..MajoranaRep
 
 function majorana_BdG(Ns::Int, t1::Real, t2::Real, retstate::Bool = false)
     a, b = im*t1/2, im*t2/2

@@ -1,3 +1,4 @@
+module MajoranaRep
 using ITensors, ITensorMPS
 
 function ITensors.space(
@@ -81,3 +82,4 @@ ITensors.has_fermion_string(::OpName"Gamma2", ::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma",::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma1",::SiteType"Fermion")=true
 ITensors.has_fermion_string(::OpName"Gamma2", ::SiteType"Fermion")=true
+end
