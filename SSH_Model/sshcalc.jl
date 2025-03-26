@@ -53,5 +53,5 @@ end
 
 layout=@layout([a b;c d])
 P = plot(p1,p2,p3,p4,layout=layout,size=(900,700))
-savefig(P, "SSH_Model/sshfigs/ssh_spectrum.pdf")
+#savefig(P, "SSH_Model/sshfigs/ssh_spectrum.pdf")
 

@@ -102,19 +102,19 @@ function isHermitian(A::MPO;tol=1.0e-12)
 end
 
 let
-    L,D=40,4
-    v,w=2.0,1.0
-    N=2*L 
-    sw=Sweeps(15)
+    L, D = 40, 4
+    v, w = 2.0, 1.0
+    N = 2*L 
+    sw = Sweeps(15)
     setmaxdim!(sw,100)
     setcutoff!(sw,1E-14)
-    krydim=4
-    sites=siteinds("MF",N)
-    psi0=random_mps(sites;linkdims=D)
-    H=majorana_hamiltonian(sites,v,w)
+    krydim = 4
+    sites = siteinds("MF", N)
+    psi0 = random_mps(sites; linkdims=D)
+    H = majorana_hamiltonian(sites, v, w)
     println("-----------------------------------------------------------------")
     println("Running DMRG for $L sites Majorana Fermion chain in Majorana basis for v = $v, w = $w")
-    energy, psi=dmrg(H,psi0,sw;eigsolve_krylovdim=krydim,outputlevel=1)
+    energy, psi = dmrg(H, psi0, sw; eigsolve_krylovdim=krydim, outputlevel=1)
     println("-----------------------------------------------------------------")
 end
 

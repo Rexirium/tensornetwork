@@ -1,4 +1,5 @@
-include("majorana.jl")
+include("MajoranaRep.jl")
+using ..MajoranaRep
 
 mutable struct EntangleObserver <: AbstractObserver
     bond::Int
@@ -37,7 +38,7 @@ end
 
 function KitaevChainED(Ls::Int,mu::Real,tt::Real,delta::Number)
     spec=KitaevChainSpectrum(Ls,mu,tt,delta)
-    energy=sum(spec[spec[:].<=mu])
+    energy=sum(spec[spec[:].<=0.0])
     return energy
 end
 
@@ -74,7 +75,7 @@ function KitaevChain(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Number, V
     return MPO(os,s)
 end
 
-function KitaevChainMF(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Float64)
+function KitaevChainMF(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Real)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns
@@ -87,7 +88,7 @@ function KitaevChainMF(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Float64
     return MPO(os,s)
 end
 
-function KitaevChainMF(s::Vector{Index{Int}}, mu::Real,tt::Real,delta::Number, V::Real)
+function KitaevChainMF(s::Vector{Index{Int}}, mu::Real,tt::Real,delta::Real, V::Real)
     Ns=length(s)
     os=OpSum()
     os += V/4, "Id", 1

@@ -46,7 +46,7 @@ function ITensors.space(
   return 2
 end
 
-ITensors.state(::StateName"Emo",::SiteType"MF")=[1.0 0.0]
+ITensors.state(::StateName"Emp",::SiteType"MF")=[1.0 0.0]
 ITensors.state(::StateName"Occ",::SiteType"MF")=[0.0 1.0]
 ITensors.state(::StateName"0",st::SiteType"MF")=state(StateName("Emp"),st)
 ITensors.state(::StateName"1",st::SiteType"MF")=state(StateName("Occ"),st)
