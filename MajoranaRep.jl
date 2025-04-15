@@ -1,4 +1,3 @@
-module MajoranaRep
 using ITensors, ITensorMPS
 
 function ITensors.space(
@@ -63,18 +62,23 @@ function ITensors.op!(Op::ITensor,::OpName"Gamma",::SiteType"MF",s::Index)
     Op[s'=>1,s=>1]=1.0
     return Op[s'=>2,s=>2]=-1.0
 end
+function ITensors.op!(Op::ITensor, ::OpName"N", ::SiteType"MF", s::Index)
+    return Op[s'=>2,s=>2] = 1.0
+end
 function ITensors.op!(Op::ITensor,::OpName"F",::SiteType"MF",s::Index)
     Op[s'=>1,s=>1] = 1.0
     return Op[s'=>2,s=>2] = -1.0
 end
 
-function ITensors.op!(Op::ITensor,::OpName"Gamma1",::SiteType"Fermion",s::Index)
-    Op[s'=>1, s=>2] = 1.0
-    return Op[s'=>2, s=>1] = 1.0
+function ITensors.op(::OpName"Gamma1", ::SiteType"Fermion", s::Index)
+  c = op("C", s)
+  cdag = op("Cdag", s)
+  return c + cdag
 end
-function ITensors.op!(Op::ITensor,::OpName"Gamma2",::SiteType"Fermion",s::Index)
-    Op[s'=>1, s=>2] = -1.0im
-    return Op[s'=>2,s=>1] = 1.0im
+function ITensors.op(::OpName"Gamma2", ::SiteType"Fermion", s::Index)
+  c = op("C", s)
+  cdag = op("Cdag", s)
+  return -im * (c - cdag)
 end
 
 ITensors.has_fermion_string(::OpName"Gamma1",::SiteType"MF")=true
@@ -82,4 +86,3 @@ ITensors.has_fermion_string(::OpName"Gamma2", ::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma",::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma1",::SiteType"Fermion")=true
 ITensors.has_fermion_string(::OpName"Gamma2", ::SiteType"Fermion")=true
-end

@@ -10,7 +10,7 @@ p1=let
     data=transpose(hcat(spec...))
     plot(ws,data,w=1.5,leg=false,xlabel=L"w",ylabel=L"E",framestyle=:box)
     vline!([1.0],line=(1,:dash))
-    annotate!([(0.5,3,(L"v=1"))])
+    annotate!([(0.5,3,("a) "*(L"v=1")))])
 end
 p2=let 
     L=40
@@ -20,7 +20,7 @@ p2=let
     data=transpose(hcat(spec...))
     plot(vs,data,w=1.5,leg=false,xlabel=L"v",ylabel=L"E",framestyle=:box)
     vline!([1.0],line=(1,:dash))
-    annotate!([(0.5,3,(L"w=1"))])
+    annotate!([(0.5,3, ("b) "*(L"w=1")))])
 end
 p3=let 
     L=40
@@ -32,26 +32,28 @@ p3=let
     data=transpose(hcat(spec...))
     plot(th,data,w=1.5,leg=false,xlabel=L"\theta",ylabel=L"E",framestyle=:box)
     vline!([1/3],line=(1,:dash))
-    annotate!([(0.15,3,(L"w=1"))])
+    annotate!([(0.2,3, ("c) "*(L"w=1")))])
 end
 p4=let
-    L=40
+    L = 40
     v,w=0.5,1.0
-    ls=[35,20,5]
+    ls=[21, 20, 5]
     lay=@layout([a;b;c])
-    spec,states=SSH_spectrum_obc(L,v,w;retstate=true)
-    wavefunc=[]
-    labels=[]
-    for (i,l) in enumerate(ls)
-        push!(wavefunc,states[:,l])
-        push!(labels,@sprintf("ϵ = %.2f",spec[l]))
-    end
-    labels=reshape(labels,(1,3))
-    plot(wavefunc,xlabel="site "*(L"n"),ylabel=L"\psi",ylim=(-0.4,0.6),framestyle=:box,w=1.5,label=labels)
-    annotate!([(15,0.5,(L"v=0.5,w=1"))])
+    colors = repeat([:red, :blue], Int(L/2))
+    spec, states = SSH_spectrum_obc(L,v,w;retstate=true)
+    b1 = bar(states[:, ls[1]], xtick = false, framestyle = :box, ylim =(-0.7, 0.7), 
+        ytick =[-0.6, 0.0, 0.6], legend = false, color = colors)
+    annotate!([(30, 0.5, "ϵ = +0.0")])
+    b2 = bar(states[:, ls[2]], xtick = false, framestyle = :box, ylim = (-0.4, 0.7), 
+        ytick =[-0.4, 0.0, 0.6], legend =false, color =colors)
+    annotate!([(30, 0.5, "ϵ = -0.0")])
+    b3 = bar(states[:, ls[3]], xlabel = "site "*(L"n"),framestyle = :box, ylim =(-0.3, 0.4), 
+        ytick =[-0.3, 0.0, 0.3], legend = false, color = colors)
+    annotate!([(30, 0.3, "ϵ = -1.4")])
+    plot(b1, b2, b3, layout = lay)
 end
 
-layout=@layout([a b;c d])
+layout=@layout([a{0.45h} b{0.45h};c d])
 P = plot(p1,p2,p3,p4,layout=layout,size=(900,700))
-#savefig(P, "SSH_Model/sshfigs/ssh_spectrum.pdf")
+# savefig(P, "SSH_Model/sshfigs/ssh_spectrum.pdf")
 

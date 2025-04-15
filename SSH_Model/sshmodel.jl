@@ -1,6 +1,5 @@
 using ITensors, ITensorMPS
 using LinearAlgebra
-include("../entanglement.jl")
 
 # construct evolution gates
 function evolmatrix(arg::Float64)

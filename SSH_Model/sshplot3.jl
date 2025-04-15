@@ -72,5 +72,5 @@ end
 savefig(P3, "SSH_Model/sshfigs/sshinteract_crit.pdf")
 lay = @layout([a{0.45w} b{0.55w}])
 P = plot(P1,P2, layout=lay,size = (1000,800))
-savefig(P, "SSH_Model/sshfigs/sshinteract.pdf")
+#savefig(P, "SSH_Model/sshfigs/sshinteract.pdf")
 

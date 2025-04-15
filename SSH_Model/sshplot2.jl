@@ -20,4 +20,4 @@ P = let
     plot(p1,p2,layout=lay,size=(1000,400))
 end
 
-savefig(P, "SSH_Model/sshfigs/ssh_density_corr.pdf")
+#savefig(P, "SSH_Model/sshfigs/ssh_density_corr.pdf")

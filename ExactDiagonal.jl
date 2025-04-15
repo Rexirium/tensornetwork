@@ -2,10 +2,11 @@ using LinearAlgebra
 using BenchmarkTools
 using ITensors, ITensorMPS
 
+
 mutable struct NumState
     sitenum::Int
     stateind::Vector{<:Int}
-    statevec::Vector
+    statevec::Vector{<:ComplexF64}
 
     NumState(sitenum, stateind, statevec) =  new(sitenum, stateind, statevec)
 end
@@ -40,17 +41,17 @@ end
 function spectrum_BdG(A::AbstractMatrix, B::AbstractMatrix; retstate::Bool=true)
     size(A) == size(B) || error("incompactible size of A and B")
     Ls = size(A, 1)
-    H = [A B; -conj(B) -conj(A)]
+    H = [A -conj(B); B -transpose(A)]
     mu = tr(A)/Ls
     H = Hermitian(H)
     if retstate
         λ, T = eigen(H)
-        spec = λ[1:Ls] .+ mu
-        U = T[1:Ls, 1:Ls]
-        V = T[(Ls+1): 2Ls, 1:Ls]
+        spec = λ[Ls+1 : 2Ls]
+        U = T[1:Ls, Ls+1 : 2Ls]
+        V = T[(Ls+1): 2Ls, Ls+1 : 2Ls]
         return spec, U, V
     else
-        spec = eigvals(H)[1:Ls] .+ mu
+        spec = eigvals(H)
         return spec
     end
 end
@@ -86,6 +87,12 @@ function groundstate(H::AbstractMatrix; etol::Float64= 1.0E-14)
     states = ntuple(x -> numconserve_gs(U, Ls, N1 + x-1), deg)
     return energy, states
 end
+
+function groundstate_energy(H::AbstractMatrix)
+    spec = eigvals(H)
+    neginds = findall(x -> x<=0.0, spec)
+    return sum(spec[neginds])
+end
 # calculate the density on site i , cdag(i) c(i) , i<j
 function expectation(state::NumState, i::Int)
     stind = state.stateind
@@ -112,7 +119,7 @@ function expectation(state::NumState, A::AbstractMatrix)
     Ls = state.sitenum
     Ls == size(A, 1) || error("Wrong matrix dimension of operator")
     resd = 0.0
-    resu = 0.0+0.0im
+    resu = complex(0.0, 0.0)
     for i in 1:Ls
         resd += A[i,i] * expectation(state, i)
     end
@@ -147,35 +154,3 @@ function correlation_mat(state::NumState)
     end
     return Matrix(Hermitian(corr))
 end
-
-function Hamiltonian(s::Vector{Index{Int}}, t1::Number, t2::Number) 
-    Ns=length(s)
-    os=OpSum()
-    for j in 1:Ns-1
-        t= isodd(j) ? t1 : t2
-        os += t, "Cdag",j, "C",j+1
-        os += t', "Cdag",j+1, "C",j
-    end
-    return MPO(os, s)
-end
-
-        
-
-v, w =2.0+1.0im, 1.0 -0.5im
-L = 10
-sw = Sweeps(10)
-setmaxdim!(sw, 200)
-
-arr = repeat([v, w], Int(L/2))[1:L-1]
-H = Hermitian(diagm(1=>arr))
-
-ss = siteinds("Fermion", L)
-H_mpo = Hamiltonian(ss, v, w)
-psi0 = random_mps(ss; linkdims = 4)
-
-EED, psiED = groundstate(H)
-EDMRG, psiDMRG = dmrg(H_mpo, psi0, sw; outputlevel=0)
-
-energy = expectation(psiED[1], H)
-
-EED, energy

@@ -25,4 +25,4 @@ P = let
     plot(p1,p3,p2,p4,layout=lay,size=(800,600))
 end
 
-savefig(P, "SSH_Model/sshfigs/ssh_gnd.pdf")
+#savefig(P, "SSH_Model/sshfigs/ssh_gnd.pdf")
