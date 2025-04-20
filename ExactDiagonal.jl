@@ -1,19 +1,19 @@
 using LinearAlgebra
 using BenchmarkTools
-using ITensors, ITensorMPS
-
 
 mutable struct NumState
     sitenum::Int
     stateind::Vector{<:Int}
-    statevec::Vector{<:ComplexF64}
+    statevec::Vector{<:Number}
 
     NumState(sitenum, stateind, statevec) =  new(sitenum, stateind, statevec)
 end
 
+struct OpN end
+struct OpC end
+
 function readbit(num::Int, pos::Int)
-    mask = 1<<(pos-1)
-    return (num & mask)>>(pos-1)
+    return (num >> (pos -1)) & 1 == 1
 end
 # count number of ones between bit i and j (excluding i and j), i<j 
 # and return the sign according to the odd or even of the number 
@@ -23,10 +23,28 @@ function signbetween(num::Int, i::Int, j::Int)
     return (-1)^count_ones(segnum)
 end
 
+function splitbasis(num::Int, b::Int)
+    b >=0 || return 0, num
+    left = num >> b
+    right = num & ((1<<b) - 1)
+    return right, left
+end
+
 function numconserve_basis(Ls::Int, Ns::Int)
-    Ns<=Ls || error("more fermions than sites!")
-    basis = collect(range(0, 1<<Ls -1))
-    basis = basis[count_ones.(basis).== Ns]
+    Ns > Ls && error("more fermions than sites!")
+    Ns == 0 && return Int[0]
+    basis = Int[]
+    sizehint!(basis, binomial(Ls, Ns))
+    maxind = (1<<Ls) - 1
+    ind = (1<<Ns) - 1
+    while ind <= maxind
+        push!(basis, ind)
+        u = ind & (-ind)
+        v = ind + u
+        next = v + ((v ⊻ ind) ÷ u) >> 2
+        next > maxind && break
+        ind = next
+    end
     return basis
 end
 
@@ -42,17 +60,44 @@ function spectrum_BdG(A::AbstractMatrix, B::AbstractMatrix; retstate::Bool=true)
     size(A) == size(B) || error("incompactible size of A and B")
     Ls = size(A, 1)
     H = [A -conj(B); B -transpose(A)]
-    mu = tr(A)/Ls
     H = Hermitian(H)
     if retstate
         λ, T = eigen(H)
-        spec = λ[Ls+1 : 2Ls]
         U = T[1:Ls, Ls+1 : 2Ls]
         V = T[(Ls+1): 2Ls, Ls+1 : 2Ls]
-        return spec, U, V
+        return λ, U, V
     else
         spec = eigvals(H)
         return spec
+    end
+end
+
+function matrixize(state::NumState, b::Int)
+    basis = state.stateind
+    mask = (1<<b) -1
+    rinds = basis .>> b
+    linds = basis .& mask
+    rset = unique(rinds)
+    lset = unique(linds)
+    M, N = length(rset), length(lset)
+    rdict = Dict(val=>idx for (idx, val) in enumerate(rset))
+    ldict = Dict(val=>idx for (idx, val) in enumerate(lset))
+    T = eltype(state.statevec)
+    mat = zeros(T, M, N)
+    for k in 1:length(state.stateind)
+        i = rdict[rinds[k]]
+        j = ldict[linds[k]]
+        mat[i,j] = state.statevec[k]
+    end
+    return mat
+end
+# |ψ⟩ = ∑_ij m_ij | j i ⟩
+function reduce_densitymat(state::NumState, b::Int; traceout = :righht)
+    mat = matrixize(state, b)
+    if traceout == :right
+        return mat * mat'
+    else
+        return transpose(mat) * conj(mat)
     end
 end
 
@@ -67,10 +112,12 @@ end
 function numconserve_gs(U::AbstractMatrix, Ls::Int, Ns::Int)
     basis = numconserve_basis(Ls, Ns)
     dim = length(basis)
-    statevec = zeros(ComplexF64, dim)
+    T = eltype(U)
+    statevec = zeros(T, dim)
     for (i, num) in enumerate(basis)
-        mask = BitArray(digits(num, base=2, pad=Ls))
-        statevec[i] = det(U[mask, 1:Ns])
+        mask = readbit.(num, 1:Ls)
+        subU = @view U[mask, 1:Ns]
+        statevec[i] = det(subU)
     end
     return NumState(Ls, basis, statevec)
 end
@@ -78,20 +125,22 @@ end
 function groundstate(H::AbstractMatrix; etol::Float64= 1.0E-14)
     Ls = size(H, 1)
     spec, U = eigen(H)
-    neginds1 = findall(x -> x<= -etol, spec)
-    neginds0 = findall(x -> x<=0.0, spec)
-    neginds2 = findall(x -> x<= etol, spec)
-    energy = sum(spec[neginds0])
-    N1, N2 = length(neginds1), length(neginds2)
+    N0 = searchsortedlast(spec, 0.0)
+    N1 = searchsortedlast(spec, -etol) 
+    N2 = searchsortedlast(spec, etol)
     deg = N2 - N1 + 1
-    states = ntuple(x -> numconserve_gs(U, Ls, N1 + x-1), deg)
+    energy = sum(spec[1:N0])
+    states = Vector{NumState}(undef, deg)
+    for i in 1:deg
+        states[i] = numconserve_gs(U, Ls, N1 + i-1)
+    end
     return energy, states
 end
 
 function groundstate_energy(H::AbstractMatrix)
     spec = eigvals(H)
-    neginds = findall(x -> x<=0.0, spec)
-    return sum(spec[neginds])
+    N0 = searchsortedlast(spec, 0)
+    return sum(spec[1:N0])
 end
 # calculate the density on site i , cdag(i) c(i) , i<j
 function expectation(state::NumState, i::Int)
@@ -101,18 +150,28 @@ function expectation(state::NumState, i::Int)
     return real(dot(stvec, maski.*stvec))
 end
 # calculate the operator cdag(i) c(j) , i<j
-function expectation(state::NumState, i::Int, j::Int)
-    i < j || error("i is supposed to be smaller than j")
+function expectation(state::NumState, i::Int, j::Int, ::Val{OpC})
+    i == j && return expectation(state, i)
+    i, j = min(i,j), max(i,j)
     stind = copy(state.stateind)
     stvec = copy(state.statevec)
-    maski = readbit.(stind, i) .== 0
-    maskj = readbit.(stind, j) .== 1
+    maski = .~readbit.(stind, i)
+    maskj = readbit.(stind, j) 
     maskold = maski .& maskj
     masknew = .~(maski .| maskj)
     fsign = signbetween.(stind[maskold], i, j)
     stvec[masknew].= stvec[maskold].*fsign
     stvec[.~masknew].= 0.0
     return dot(state.statevec, stvec)
+end
+
+function expectation(state::NumState, i::Int, j::Int, ::Val{OpN})
+    i ==j && return expect(state, i)
+    stind = state.stateind
+    maski = readbit.(stind, i)
+    maskj = readbit.(stind, j)
+    stvec = state.statevec
+    return real(dot(maskj.*stvec, maski.*stvec))
 end
 
 function expectation(state::NumState, A::AbstractMatrix)
@@ -125,7 +184,7 @@ function expectation(state::NumState, A::AbstractMatrix)
     end
     for i in 1:Ls-1
         for j in i+1:Ls
-            resu += A[i,j]* expectation(state, i, j)
+            resu += A[i,j]* expectation(state, i, j, Val(OpC))
         end
     end
     return real(resd) + 2 * real(resu)
@@ -140,17 +199,19 @@ function density_vec(state::NumState)
     return density
 end
 
-function correlation_mat(state::NumState)
+function correlation_mat(state::NumState, val)
     Ls = state.sitenum
-    corr = zeros(ComplexF64, Ls, Ls)
+    corr = zeros(eltype(state.statevec), Ls, Ls)
     for i in 1:Ls
         for j in i:Ls
             if j == i
                 corr[i, j] = expectation(state, i)
             else
-                corr[i, j] = expectation(state, i, j)
+                corr[i, j] = expectation(state, i, j, val)
             end
         end
     end
     return Matrix(Hermitian(corr))
 end
+
+

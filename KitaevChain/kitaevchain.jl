@@ -1,5 +1,4 @@
-include("MajoranaRep.jl")
-using ..MajoranaRep
+include("../MajoranaRep.jl")
 
 mutable struct EntangleObserver <: AbstractObserver
     bond::Int
@@ -37,8 +36,8 @@ function KitaevChainSpectrum(Ls::Int,mu::Real,tt::Real,delta::Number)
 end
 
 function KitaevChainED(Ls::Int,mu::Real,tt::Real,delta::Number)
-    spec=KitaevChainSpectrum(Ls,mu,tt,delta)
-    energy=sum(spec[spec[:].<=0.0])
+    spec = KitaevChainSpectrum(Ls,mu,tt,delta)
+    energy = sum(spec[spec[:].<=0.0])
     return energy
 end
 
