@@ -2,6 +2,14 @@ using LinearAlgebra, MKL
 using HDF5
 using LaTeXStrings
 using Plots
+default(
+    grid=false, 
+    titlelocation=:left,
+    framestyle=:box,
+    guidefontsize=16,
+    legendfontsize=10,
+    tickfontsize=10
+)
 
 let 
     file1 = h5open("MajoranaChain/majoranasshbenchdata2.h5", "r")

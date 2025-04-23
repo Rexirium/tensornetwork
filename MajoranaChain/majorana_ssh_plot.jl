@@ -5,7 +5,10 @@ using Plots
 default(
     grid=false, 
     titlelocation=:left,
-    framestyle=:box
+    framestyle=:box,
+    guidefontsize=16,
+    legendfontsize=10,
+    tickfontsize=10
 )
 
 let 
@@ -25,7 +28,7 @@ let
     alllabel = hcat(alglabel, "ED")
 
     p1 = plot(vs, energies, xtick=:in, ylabel=L"E", lw = 2,  label = alllabel)
-    vline!([1.0], line=(1,:dash), label=false)
+    vline!([1.0], line=(1,:dash), label=false,legend_position=:bottomleft)
 
     p1e = plot(vs, energyerr, xlabel=L"v", ylabel="err",yscale=:log10, 
         lw =2, label=alglabel)
@@ -36,6 +39,6 @@ let
     vline!([1], line=(1,:dash), label=false)
 
     P = plot(p1, p1e, p2, layout = @layout([[a;b] c]), size=(800, 450), title=["a)" "b)" "c)"])
-    #savefig(P, "MajoranaChain/figs/mfssh_en.pdf")
+    #savefig(P, "MajoranaChain/majoranafigs/mfssh_en.pdf")
 end
 
