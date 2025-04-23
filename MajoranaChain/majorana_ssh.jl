@@ -2,7 +2,7 @@ using LinearAlgebra, MKL
 using ITensors, ITensorMPS
 include("../MajoranaRep.jl")
 
-function majorana2BdG(Ns::Int, t1::Real, t2::Real, retstate::Bool = false)
+function majorana2BdG(Ns::Int, t1::Real, t2::Real)
     A = diagm(0=>(2t1) .* ones(Ns), 1=>(-t2).*ones(Ns-1), -1=>(-t2').*ones(Ns-1) )
     B = diagm(1=>t2 .* ones(Ns-1), -1=>(-t2).*ones(Ns-1))
     H = [A -conj(B); B -transpose(A)]
