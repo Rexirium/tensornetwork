@@ -14,7 +14,7 @@ krydim = 4
 
 let 
     L, D = 40, 4
-    w, b = 1.0, Int(L/2)
+    w, b = 1.0, L÷2
     num = 50
 
     vs = LinRange(0.0, 2.5, num + 1)

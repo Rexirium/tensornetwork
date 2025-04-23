@@ -6,7 +6,7 @@ default(
     grid=false, 
     titlelocation=:left,
     framestyle=:box,
-    guidefontsize=16,
+    guidefontsize=14,
     legendfontsize=10,
     tickfontsize=10
 )
@@ -59,5 +59,5 @@ let
     end
     p2 = plot(ps2... , layout= @layout([a b c]), size = (800, 250))
     P = plot(p1, p2, layout=@layout([a; b{0.45h}]), size=(800, 500))
-    #savefig(P, "MajoranaChain/figs/mfssh_entangle.pdf")
+    savefig(P, "MajoranaChain/majoranafigs/mfssh_entangle.pdf")
 end

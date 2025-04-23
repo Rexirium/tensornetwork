@@ -79,10 +79,10 @@ let
     sites = siteinds("Fermion", L)
     psi0 = random_mps(sites; linkdims = D)
     # define hamiltonian and corresponding MPO
-    mu =  repeat([1.0, -1.0], center)
-    tnn = ones(L-1)
-    tnnn = - 0.0 .* ones(L-2)
-    H = Hermitian(diagm(0=>mu, 1=>tnn, 2=>tnnn))
+    mus =  ones(L)
+    tnn = zeros(L-1)
+    tnnn = zeros(L-2)
+    H = Hermitian(diagm(0=>mus, 1=>tnn, 2=>tnnn))
     H_MPO = makeHamiltonian(sites, H)
 
     energy_DMRG, psi_DMRG = dmrg(H_MPO, psi0, sw, observer = obs; eigsolve_krylovdim = krydim)

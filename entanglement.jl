@@ -29,7 +29,6 @@ function ITensorMPS.measure!(O::EntangleObserver; psi, sweep_is_done, kwargs...)
     if sweep_is_done
         b = O.bond
         SvN = entangle_entropy(psi, b)
-        D = maxlinkdim(psi)
         push!(O.data, SvN)
         #println("  von Neumann entropy SvN = $SvN")
     end
