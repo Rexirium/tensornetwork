@@ -81,6 +81,10 @@ function ITensors.op(::OpName"Gamma2", ::SiteType"Fermion", s::Index)
   return -im * (c - cdag)
 end
 
+function ITensors.op(::OpName"N", ::SiteType"S=1/2", s::Index)
+  return 0.5 * op("Id", s) - op("Sz", s)
+end
+
 ITensors.has_fermion_string(::OpName"Gamma1",::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma2", ::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma",::SiteType"MF")=true

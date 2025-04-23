@@ -101,6 +101,19 @@ function reduce_densitymat(state::NumState, b::Int; traceout = :righht)
     end
 end
 
+function entangle_entropy(state::NumState, b::Int)
+    b <= 0 && return 0.0
+    mat = matrixize(state, b)
+    Σ = svd(mat).S
+    SvN = 0.0
+    rank = length(Σ)
+    for n in 1:rank
+        p = Σ[n]*Σ[n]
+        SvN -= p*log(p)
+    end
+    return SvN
+end
+
 function single_excitation(H::AbstractMatrix, n::Int)
     Ls = size(H, 1)
     spec, U = eigen(H)
@@ -139,8 +152,17 @@ end
 
 function groundstate_energy(H::AbstractMatrix)
     spec = eigvals(H)
-    N0 = searchsortedlast(spec, 0)
+    N0 = searchsortedlast(spec, 0.0)
     return sum(spec[1:N0])
+end
+
+function groundstate_energy(A::AbstractMatrix, B::AbstractMatrix)
+    size(A) == size(B) || error("incompactible size of A and B")
+    Ns = size(A, 1)
+    H = [A -conj(B); B -transpose(A)]
+    H = Hermitian(H)
+    spec = eigvals(H, 1:Ns)
+    return sum(spec)
 end
 # calculate the density on site i , cdag(i) c(i) , i<j
 function expectation(state::NumState, i::Int)

@@ -1,7 +1,7 @@
 mutable struct EntangleObserver <: AbstractObserver
     bond::Int
     data::Vector{Any}
-    EntangleObserver(bond=1, data=[])=new(bond,data)
+    EntangleObserver(bond=1, data=Float64[])=new(bond,data)
 end
 
 mutable struct BondsObserver <: AbstractObserver
@@ -24,26 +24,14 @@ function entangle_entropy(psi::MPS, b::Int)
     return SvN
 end
 
-function entangle_entropy(state::NumState, b::Int)
-    b <= 0 && return 0.0
-    mat = matrixize(state, b)
-    Σ = svd(mat).S
-    SvN = 0.0
-    rank = length(Σ)
-    for n in 1:rank
-        p = Σ[n]*Σ[n]
-        SvN -= p*log(p)
-    end
-    return SvN
-end
 #inspect entanglement entropy after each sweep of DMRG
 function ITensorMPS.measure!(O::EntangleObserver; psi, sweep_is_done, kwargs...)
     if sweep_is_done
         b = O.bond
         SvN = entangle_entropy(psi, b)
         D = maxlinkdim(psi)
-        push!(O.data, [SvN, D])
-        #println("  von Neumann entropy SvN = $SvN, max link dimension D = $D")
+        push!(O.data, SvN)
+        #println("  von Neumann entropy SvN = $SvN")
     end
 end
 

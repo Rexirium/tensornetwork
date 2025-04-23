@@ -1,17 +1,12 @@
-using LinearAlgebra
+using LinearAlgebra, MKL
 using ITensors, ITensorMPS
 include("../MajoranaRep.jl")
 
-function majorana_BdG(Ns::Int, t1::Real, t2::Real, retstate::Bool = false)
-    a, b = im*t1/2, im*t2/2
-    arr = repeat([a,b], Ns)
-    deleteat!(arr, 2*Ns)
-    hamil = Hermitian(diagm(1=>arr))
-    if retstate
-        return eigen(hamil)
-    else
-        return eigvals(hamil)
-    end
+function majorana2BdG(Ns::Int, t1::Real, t2::Real, retstate::Bool = false)
+    A = diagm(0=>(2t1) .* ones(Ns), 1=>(-t2).*ones(Ns-1), -1=>(-t2').*ones(Ns-1) )
+    B = diagm(1=>t2 .* ones(Ns-1), -1=>(-t2).*ones(Ns-1))
+    H = [A -conj(B); B -transpose(A)]
+    return Hermitian(H)
 end
 
 function majorana_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
@@ -65,6 +60,7 @@ function spin_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
     return MPO(os, s)
 end
 
+#=
 L, D = 40, 4
 v, w = 1.0, 2.0
 sw = Sweeps(15)
@@ -111,7 +107,7 @@ let
     energy, psi=dmrg(H,psi0,sw;eigsolve_krylovdim=krydim,outputlevel=1)
     println("-----------------------------------------------------------------") 
 end
-
+=#
 
 
 
