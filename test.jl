@@ -1,6 +1,7 @@
 using ITensors, ITensorMPS
 using LinearAlgebra
 using Plots, LaTeXStrings
+using Random
 
 include("ExactDiagonal.jl")
 include("entanglement.jl")
@@ -66,8 +67,8 @@ end
 
 let 
     # model setup
-    L, D = 20, 4
-    v, w = 0.5, 1.0
+    L, D = 10, 4
+    v, w = 0.0, 1.0
     bs = range(0, L)
     center = L÷2
     # DMRG parameters and initialization
@@ -79,38 +80,41 @@ let
     sites = siteinds("Fermion", L)
     psi0 = random_mps(sites; linkdims = D)
     # define hamiltonian and corresponding MPO
-    mus =  ones(L)
-    tnn = zeros(L-1)
+    mus =  zeros(L)
+    tnn = repeat([v, w], center)[1: L-1]
     tnnn = zeros(L-2)
     H = Hermitian(diagm(0=>mus, 1=>tnn, 2=>tnnn))
     H_MPO = makeHamiltonian(sites, H)
 
     energy_DMRG, psi_DMRG = dmrg(H_MPO, psi0, sw, observer = obs; eigsolve_krylovdim = krydim)
     energy_ED, psi_ED = groundstate(H)
+    deg = length(psi_ED)
+    d = rand(RandomDevice(),1:deg)
     maxbond = max((obs.bonds)...)
     spectrum = spectrum_BdG(H, retstate = false)
 
     density_DMRG = expect(psi_DMRG, "N")
-    density_ED = density_vec(psi_ED[1])
+    density_ED = density_vec(psi_ED[d])
 
-    corr_DMRG = real.(correlation_matrix(psi_DMRG, "Cdag", "C")[center, :])
-    corr_ED = real.(correlation_mat(psi_ED[1], Val(OpC))[center, :])
+    corr_DMRG = real.(correlation_matrix(psi_DMRG, "N", "N")[center, :])
+    corr_ED = real.(correlation_mat(psi_ED[d], Val(OpN))[center, :])
 
 
     entangle_DMRG = zeros(L+1)
     entangle_ED = zeros(L+1)
     for (i, b) in enumerate(bs)
         entangle_DMRG[i] = entangle_entropy(psi_DMRG, b)
-        entangle_ED[i] = entangle_entropy(psi_ED[1], b)
+        entangle_ED[i] = entangle_entropy(psi_ED[d], b)
     end
     
     println("DMRG energy is $energy_DMRG, ED energy is $energy_ED")
     println("maxbond during DMRG is $maxbond")
+
     hm = heatmap(Matrix(H), yflip = true, xtick=false, ytick=false, title="hamiltonian")
     sc = scatter(spectrum, xlabel = L"n", ylabel="energy", framestyle = :box, legend = false, title="spectrum")
-    b1 = bar(density_DMRG, ylabel = "density", ylim=(0.0, 1.0),
+    b1 = bar(density_DMRG, ylabel = "density", ylim=(0.0, 1.0), xlim=(0.5, L+0.5),
         legend = false, framestyle = :box, color = :red, title = "DMRG density")
-    b2 = bar(density_ED, xlabel = "site j", ylabel = "density", ylim=(0.0, 1.0),
+    b2 = bar(density_ED, xlabel = "site j", ylabel = "density", ylim=(0.0, 1.0), xlim=(0.5,L+0.5),
         legend = false, framestyle = :box, color = :blue, title = "ED density")
     pl = plot(bs, [entangle_DMRG, entangle_ED], xlabel="site", xlim=(0, L), ylabel="SvN", framestyle=:box,
         label=["DMRG" "ED"], lw=2, title="entanglement entropy")

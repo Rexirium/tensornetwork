@@ -19,7 +19,9 @@ function entangle_entropy(psi::MPS, b::Int)
     SvN = 0.0
     for n = 1:dim(S,1)
         p = S[n, n]*S[n, n]
-        SvN -= p*log(p)
+        if p > 0.0
+            SvN -= p*log(p)
+        end
     end
     return SvN
 end

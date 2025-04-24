@@ -109,7 +109,9 @@ function entangle_entropy(state::NumState, b::Int)
     rank = length(Σ)
     for n in 1:rank
         p = Σ[n]*Σ[n]
-        SvN -= p*log(p)
+        if p > 0.0
+            SvN -= p*log(p)
+        end
     end
     return SvN
 end
@@ -135,12 +137,12 @@ function numconserve_gs(U::AbstractMatrix, Ls::Int, Ns::Int)
     return NumState(Ls, basis, statevec)
 end
 
-function groundstate(H::AbstractMatrix; etol::Float64= 1.0E-14)
+function groundstate(H::AbstractMatrix; degtol::Float64= 1.0E-3)
     Ls = size(H, 1)
     spec, U = eigen(H)
     N0 = searchsortedlast(spec, 0.0)
-    N1 = searchsortedlast(spec, -etol) 
-    N2 = searchsortedlast(spec, etol)
+    N1 = searchsortedlast(spec, -degtol) 
+    N2 = searchsortedlast(spec, degtol)
     deg = N2 - N1 + 1
     energy = sum(spec[1:N0])
     states = Vector{NumState}(undef, deg)

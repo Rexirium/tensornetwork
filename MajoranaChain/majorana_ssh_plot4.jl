@@ -6,7 +6,7 @@ default(
     grid=false, 
     titlelocation=:left,
     framestyle=:box,
-    guidefontsize=16,
+    guidefontsize=14,
     legendfontsize=10,
     tickfontsize=10
 )
@@ -38,6 +38,6 @@ let
     plot!(twinx(), vss, maxbonds, ylim=(0,120), lw=1.5, label=alglabel, 
         c=colors, ylabel=L"D", legend_position=:topright)
     
-    P = plot(b1, b2, layout=@layout([a b]), size=(1000, 400))
-    #savefig(P, "MajoranaChain/figs/mfssh_bench.pdf")
+    P = plot(b1, b2, layout=@layout([a b]), size=(800, 400))
+    #savefig(P, "MajoranaChain/majoranafigs/mfssh_bench.pdf")
 end
