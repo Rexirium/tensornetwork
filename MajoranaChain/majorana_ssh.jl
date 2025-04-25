@@ -9,7 +9,7 @@ function majorana2BdG(Ns::Int, t1::Real, t2::Real)
     return Hermitian(H)
 end
 
-function majorana_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
+function majorana_hamiltonian(s::Vector{<:Index}, t1::Real, t2::Real)
     Ns = length(s)
     os = OpSum()
     for j in 1:Ns-1
@@ -20,7 +20,7 @@ function majorana_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
     return MPO(os,s)
 end
 
-function jordan_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
+function jordan_hamiltonian(s::Vector{<:Index}, t1::Real, t2::Real)
     Ns = length(s)
     os = OpSum()
     for j in 1:Ns-1
@@ -31,7 +31,7 @@ function jordan_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
     return MPO(os,s)
 end
 
-function fermion_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
+function fermion_hamiltonian(s::Vector{<:Index}, t1::Real, t2::Real)
     Ns = length(s)
     os = OpSum()
     for j in 1:Ns
@@ -47,7 +47,7 @@ function fermion_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
     return MPO(os, s)
 end
 
-function spin_hamiltonian(s::Vector{Index{Int}}, t1::Real, t2::Real)
+function spin_hamiltonian(s::Vector{<:Index}, t1::Real, t2::Real)
     Ns = length(s)
     os = OpSum()
     for j in 1:Ns-1

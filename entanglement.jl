@@ -5,7 +5,7 @@ mutable struct EntangleObserver <: AbstractObserver
 end
 
 mutable struct BondsObserver <: AbstractObserver
-    bonds::Vector{Int}
+    bonds::Vector{<:Int}
     BondsObserver(bonds = Int[]) = new(bonds)
 end
 

@@ -11,7 +11,7 @@ function evolmatrix(arg::Float64)
 end
 
 #construct Hamiltonian#
-function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number) 
+function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number) 
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns-1
@@ -22,7 +22,7 @@ function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number)
     return MPO(os, s)
 end
 
-function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number, u::Real)
+function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number, u::Real)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns-1
@@ -40,7 +40,7 @@ function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number, u::Real)
     return MPO(os,s)
 end
 
-function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number, V::Vector{<:Real})
+function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number, V::Vector{<:Real})
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns-1
@@ -57,7 +57,7 @@ function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number, V::Vector{<:Real})
     return MPO(os,s)
 end
 
-function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number,u::Real,V::Vector{<:Real})
+function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number,u::Real,V::Vector{<:Real})
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns-1
@@ -78,7 +78,7 @@ function SSH_obc(s::Vector{Index{Int}},t1::Number,t2::Number,u::Real,V::Vector{<
 end
 
 # evolution gates of ITE
-function SSH_gate(s::Vector{Index{Int}},t1::Number,t2::Number,dt::Float64)
+function SSH_gate(s::Vector{<:Index},t1::Number,t2::Number,dt::Float64)
     Ns=length(s)
     gates=ITensor[]
     A1=evolmatrix(t1*dt/2)

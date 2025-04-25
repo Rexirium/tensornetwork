@@ -6,7 +6,7 @@ using Random
 include("ExactDiagonal.jl")
 include("entanglement.jl")
 
-function makeHamiltonian(s::Vector{Index{Int}}, hamil::AbstractMatrix)
+function makeHamiltonian(s::Vector{<:Index}, hamil::AbstractMatrix)
     length(s) == size(hamil, 1) || error("Wrong length of MPS indices")
     Ns = length(s)
     os = OpSum()
@@ -29,7 +29,7 @@ function makeSSH(Ls::Int, t1::Number, t2::Number)
     H = diagm(1=>arr, -1=>conj(arr))
     return Hermitian(H)
 end
-function makeSSH(s::Vector{Index{Int}}, t1::Number, t2::Number)
+function makeSSH(s::Vector{<:Index}, t1::Number, t2::Number)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns-1
@@ -49,7 +49,7 @@ function makeKitaevChain(Ls::Int, mu::Real, tt::Number, delta::Number)
     return A, B
 end
 
-function makeKitaevChain(s::Vector{Index{Int}}, mu::Real, tt::Number, delta::Number)
+function makeKitaevChain(s::Vector{<:Index}, mu::Real, tt::Number, delta::Number)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns

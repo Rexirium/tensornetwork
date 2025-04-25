@@ -41,7 +41,7 @@ function KitaevChainED(Ls::Int,mu::Real,tt::Real,delta::Number)
     return energy
 end
 
-function KitaevChain(s::Vector{Index{Int}}, mu::Real,tt::Real,delta::Number)
+function KitaevChain(s::Vector{<:Index}, mu::Real,tt::Real,delta::Number)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns
@@ -57,7 +57,7 @@ function KitaevChain(s::Vector{Index{Int}}, mu::Real,tt::Real,delta::Number)
     return MPO(os,s)
 end
 
-function KitaevChain(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Number, V::Real)
+function KitaevChain(s::Vector{<:Index}, mu::Real, tt::Real, delta::Number, V::Real)
     Ns = length(s)
     os = OpSum()
     for j in 1:Ns
@@ -74,7 +74,7 @@ function KitaevChain(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Number, V
     return MPO(os,s)
 end
 
-function KitaevChainMF(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Real)
+function KitaevChainMF(s::Vector{<:Index}, mu::Real, tt::Real, delta::Real)
     Ns=length(s)
     os=OpSum()
     for j in 1:Ns
@@ -87,7 +87,7 @@ function KitaevChainMF(s::Vector{Index{Int}}, mu::Real, tt::Real, delta::Real)
     return MPO(os,s)
 end
 
-function KitaevChainMF(s::Vector{Index{Int}}, mu::Real,tt::Real,delta::Real, V::Real)
+function KitaevChainMF(s::Vector{<:Index}, mu::Real,tt::Real,delta::Real, V::Real)
     Ns=length(s)
     os=OpSum()
     os += V/4, "Id", 1

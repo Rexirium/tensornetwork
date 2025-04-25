@@ -9,7 +9,7 @@ let
     setcutoff!(sw,1E-12)
     krydim=4
 
-    function Ising_OBC(s::Vector{Index{Int64}},Jn::Float64, Jnn::Float64)
+    function Ising_OBC(s::Vector{<:Index},Jn::Float64, Jnn::Float64)
         Ns=length(s)
         os=OpSum()
         for j in 1:Ns-1
