@@ -1,5 +1,4 @@
 using LinearAlgebra
-using BenchmarkTools
 
 mutable struct NumState
     sitenum::Int

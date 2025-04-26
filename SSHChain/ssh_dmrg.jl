@@ -6,7 +6,7 @@ include("../ExactDiagonal.jl")
 include("../entanglement.jl")
 
 nthreads() = 8
-nthreadpools() = 1
+nthreadpools() = 2
 BLAS.set_num_threads(4)
 
 seeds = rand(RandomDevice(), UInt128)
@@ -56,8 +56,8 @@ let
         H_fermion = ssh_fermion(fcsites, v, w)
         H_transf = ssh_transf(fmsites, v, w)
         H_origin = ssh_origin(mmsites, v, w)
-        H_jordan = ssh_jordan(jwsites, v, w)
         H_origin2 = ssh_origin2(mosites, mesites, v, w)
+        H_jordan = ssh_jordan(jwsites, v, w)
 
         denergy = groundstate_energy(H_ssh)
 
