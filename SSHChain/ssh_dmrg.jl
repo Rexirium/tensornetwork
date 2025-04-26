@@ -28,9 +28,9 @@ let
     fcsites = siteinds("Fermion", L)
     fmsites = siteinds("Fermion", L)
     mmsites = siteinds("MF", L)
-    jwsites = siteinds("S=1/2", L)
     mosites = siteinds("MF", Lhalf)
     mesites = siteinds("MF", Lhalf)
+    jwsites = siteinds("S=1/2", L)
 
     energies = zeros(num+1, nalg)
     entropies = zeros(num+1, nalg-1)
