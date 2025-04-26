@@ -36,7 +36,7 @@ let
     entropies = zeros(num+1, nalg-1)
     maxbonds = zeros(Int, (num+1, nalg-1))
 
-    for i = 1:num+1
+    @threads for i = 1:num+1
         v = vs[i]
         rng = rngs[threadid()]
 
@@ -50,7 +50,7 @@ let
         fcobs = BondsObserver()
         mmobs = BondsObserver()
         mobs = BondsObserver()
-        jobs = BondsObserver()
+        jwobs = BondsObserver()
 
         H_ssh = ssh_hamiltonian(L, v, w)
         H_fermion = ssh_fermion(fcsites, v, w)
@@ -61,22 +61,23 @@ let
 
         denergy = groundstate_energy(H_ssh)
 
-        fcenergy, fcpsi = dmrg(H_fermion, fcpsi0, sw; observer=fcobs)
+        fcenergy, fcpsi = dmrg(H_fermion, fcpsi0, sw; observer=fcobs, outputlevel=0)
         fcentropy = entangle_entropy(fcpsi, b)
         fcbond = maximum(fcobs.bonds)
 
-        fmenergy, fmpsi = dmrg(H_transf, fmpsi0, sw; observer=fmobs)
+        fmenergy, fmpsi = dmrg(H_transf, fmpsi0, sw; observer=fmobs, outputlevel=0)
         fmentropy = entangle_entropy(fmpsi, b)
         fmbond = maximum(fmobs.bonds)
         
-        mmenergy, mmpsi = dmrg(H_origin, mmpsi0, sw; observer=mmobs)
+        mmenergy, mmpsi = dmrg(H_origin, mmpsi0, sw; observer=mmobs, outputlevel=0)
         mmentropy = entangle_entropy(mmpsi, b)
         mmbond = maximum(mmobs.bonds)
 
-        menegy, mpsis = dmrg(H_origin2, m2psi0, sw )
+        menegy, mpsis = dmrg(H_origin2, m2psi0, sw; observer=mobs, outputlevel=0)
         mentropy = entangle_entropy(mpsis, b ÷ 2)
+        mbond = maximum(mobs.bonds)
         
-        jwenergy, jwpsi = dmrg(H_jordan, jwpsi0, sw)
+        jwenergy, jwpsi = dmrg(H_jordan, jwpsi0, sw; observer=jwobs, outputlevel=0)
         jwentropy = entangle_entropy(jwpsi, b)
         jwbond = maximum(jwobs.bonds)
         
@@ -91,4 +92,5 @@ let
         write(file, "entropies", entropies)
         write(file, "maxbonds", maxbonds)
     end
+
 end
