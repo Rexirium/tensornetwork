@@ -160,10 +160,10 @@ end
 
 function groundstate_energy(A::AbstractMatrix, B::AbstractMatrix)
     size(A) == size(B) || error("incompactible size of A and B")
-    Ns = size(A, 1)
+    Ls = size(A, 1)
     H = [A -conj(B); B -transpose(A)]
     H = Hermitian(H)
-    spec = eigvals(H, 1:Ns)
+    spec = eigvals(H, 1:Ls)
     return sum(spec)
 end
 # calculate the density on site i , cdag(i) c(i) , i<j
@@ -237,5 +237,3 @@ function correlation_mat(state::NumState, val)
     end
     return Matrix(Hermitian(corr))
 end
-
-

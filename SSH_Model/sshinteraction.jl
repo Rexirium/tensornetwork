@@ -1,5 +1,5 @@
 using HDF5
-include("sshmodel.jl")
+include("ssh_hamil.jl")
 
 #DMRG parameters
 sw=Sweeps(15)

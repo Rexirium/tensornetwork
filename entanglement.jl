@@ -26,6 +26,15 @@ function entangle_entropy(psi::MPS, b::Int)
     return SvN
 end
 
+function entangle_entropy(psis::Vector{MPS}, b::Int)
+    ns = length(psis)
+    SvN = 0.0
+    for i =1:ns
+        SvN += entangle_entropy(psis[i], b)
+    end
+    return SvN
+end
+
 #inspect entanglement entropy after each sweep of DMRG
 function ITensorMPS.measure!(O::EntangleObserver; psi, sweep_is_done, kwargs...)
     if sweep_is_done

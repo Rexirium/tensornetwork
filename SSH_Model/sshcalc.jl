@@ -1,6 +1,6 @@
 using Plots
 using LaTeXStrings,Printf
-include("sshmodel.jl")
+include("ssh_hamil.jl")
 
 
 L, num = 20, 100

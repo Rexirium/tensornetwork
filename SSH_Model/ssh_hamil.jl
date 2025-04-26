@@ -12,9 +12,9 @@ end
 
 #construct Hamiltonian#
 function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number) 
-    Ns=length(s)
+    Ls=length(s)
     os=OpSum()
-    for j in 1:Ns-1
+    for j in 1:Ls-1
         t= isodd(j) ? t1 : t2
         os += t, "Cdag",j, "C",j+1
         os += t', "Cdag",j+1, "C",j
@@ -23,9 +23,9 @@ function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number)
 end
 
 function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number, u::Real)
-    Ns=length(s)
+    Ls=length(s)
     os=OpSum()
-    for j in 1:Ns-1
+    for j in 1:Ls-1
         if isodd(j)
             os += u, "N", j
             os += t1, "Cdag", j, "C", j+1
@@ -36,14 +36,14 @@ function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number, u::Real)
             os += t2', "Cdag", j+1, "C", j
         end
     end
-    os += -u, "N", Ns
+    os += -u, "N", Ls
     return MPO(os,s)
 end
 
 function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number, V::Vector{<:Real})
-    Ns=length(s)
+    Ls=length(s)
     os=OpSum()
-    for j in 1:Ns-1
+    for j in 1:Ls-1
         if isodd(j)
             os += t1, "Cdag", j, "C", j+1
             os += t1', "Cdag", j+1, "C", j
@@ -58,9 +58,9 @@ function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number, V::Vector{<:Real})
 end
 
 function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number,u::Real,V::Vector{<:Real})
-    Ns=length(s)
+    Ls=length(s)
     os=OpSum()
-    for j in 1:Ns-1
+    for j in 1:Ls-1
         if isodd(j)
             os += u, "N", j
             os += t1, "Cdag", j, "C", j+1
@@ -73,17 +73,17 @@ function SSH_obc(s::Vector{<:Index},t1::Number,t2::Number,u::Real,V::Vector{<:Re
             os += V[2], "N", j, "N", j+1
         end
     end
-    os += -u, "N", Ns
+    os += -u, "N", Ls
     return MPO(os,s)
 end
 
 # evolution gates of ITE
 function SSH_gate(s::Vector{<:Index},t1::Number,t2::Number,dt::Float64)
-    Ns=length(s)
+    Ls=length(s)
     gates=ITensor[]
     A1=evolmatrix(t1*dt/2)
     A2=evolmatrix(t2*dt/2)
-    for j in 1:Ns-1
+    for j in 1:Ls-1
         s1,s2=s[j],s[j+1]
         if isodd(j)
             U=ITensor(A1,(s1',s2',s1,s2))

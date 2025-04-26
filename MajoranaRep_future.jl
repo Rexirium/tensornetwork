@@ -1,8 +1,47 @@
 using ITensors, ITensorMPS
 
 function ITensors.space(
-    ::SiteType"MF"
+    ::SiteType"MF";
+    conserve_qns=false,
+    conserve_nf=conserve_qns,
+    conserve_nfparity=conserve_qns,
+    qnname_nf="Nf",
+    qnname_nfparity="NfParity",
+    qnname_sz="Sz",
+    conserve_sz=false,
+    conserve_parity=nothing,
 )
+  if !isnothing(conserve_parity)
+    conserve_nfparity = conserve_parity
+  end
+  if conserve_sz == true
+    conserve_sz = "Up"
+  end
+  if conserve_nf && conserve_sz == "Up"
+    zer = QN((qnname_nf, 0, -1), (qnname_sz, 0)) => 1
+    one = QN((qnname_nf, 1, -1), (qnname_sz, 1)) => 1
+    return [zer, one]
+  elseif conserve_nf && conserve_sz == "Dn"
+    zer = QN((qnname_nf, 0, -1), (qnname_sz, 0)) => 1
+    one = QN((qnname_nf, 1, -1), (qnname_sz, -1)) => 1
+    return [zer, one]
+  elseif conserve_nfparity && conserve_sz == "Up"
+    zer = QN((qnname_nfparity, 0, -2), (qnname_sz, 0)) => 1
+    one = QN((qnname_nfparity, 1, -2), (qnname_sz, 1)) => 1
+    return [zer, one]
+  elseif conserve_nfparity && conserve_sz == "Dn"
+    zer = QN((qnname_nfparity, 0, -2), (qnname_sz, 0)) => 1
+    one = QN((qnname_nfparity, 1, -2), (qnname_sz, -1)) => 1
+    return [zer, one]
+  elseif conserve_nf
+    zer = QN(qnname_nf, 0, -1) => 1
+    one = QN(qnname_nf, 1, -1) => 1
+    return [zer, one]
+  elseif conserve_nfparity
+    zer = QN(qnname_nfparity, 0, -2) => 1
+    one = QN(qnname_nfparity, 1, -2) => 1
+    return [zer, one]
+  end
   return 2
 end
 
@@ -51,26 +90,3 @@ ITensors.has_fermion_string(::OpName"Gamma2", ::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma",::SiteType"MF")=true
 ITensors.has_fermion_string(::OpName"Gamma1",::SiteType"Fermion")=true
 ITensors.has_fermion_string(::OpName"Gamma2", ::SiteType"Fermion")=true
-
-function ITensorMPS.random_mps(siteo::Vector{<:Index}, sitee::Vector{<:Index}; linkdims=1)
-  psio = random_mps(siteo; linkdims)
-  psie = random_mps(sitee; linkdims)
-  return [psio, psie]
-end
-function ITensorMPS.random_mps(rng::Random.AbstractRNG, siteo::Vector{<:Index}, sitee::Vector{<:Index}; linkdims=1)
-  psio = random_mps(rng, siteo; linkdims)
-  psie = random_mps(rng, sitee; linkdims)
-  return [psio, psie]
-end
-
-function ITensorMPS.dmrg(Hs::Vector{MPO}, psi0s::Vector{MPS}, sweeps::Sweeps; kwargs...)
-  ns = length(psi0s)
-  Es = 0.0
-  psis = MPS[]
-  for i = 1:ns
-    E, psi = dmrg(Hs[i], psi0s[i], sweeps; kwargs...)
-    Es += E
-    push!(psis, psi)
-  end
-  return Es, psis
-end
