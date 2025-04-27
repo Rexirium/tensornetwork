@@ -39,5 +39,5 @@ let
         c=colors, ylabel=L"D", legend_position=:topright)
     
     P = plot(b1, b2, layout=@layout([a b]), size=(700, 400))
-    savefig(P, "MajoranaChain/majoranafigs/mfssh_bench.pdf")
+    #savefig(P, "MajoranaChain/majoranafigs/mfssh_bench.pdf")
 end

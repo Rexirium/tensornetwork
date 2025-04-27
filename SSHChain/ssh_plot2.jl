@@ -3,7 +3,7 @@ using HDF5
 using LaTeXStrings
 using Plots
 default(
-    grid=false, 
+    grid=true, 
     titlelocation=:left,
     framestyle=:box,
     guidefontsize=14,
@@ -12,8 +12,8 @@ default(
 )
 
 let 
-    file = h5open("MajoranaChain/majoranasshbenchdata.h5", "r")
-    vs = read(file, "vs")
+    file = h5open("SSHChain/sshbenchdata2.h5", "r")
+    vls = read(file, "vls")
     entangles = read(file, "entangles")
     close(file)
 
@@ -29,14 +29,18 @@ let
         if i==4
             continue
         end
-        p = plot(xs, entangles[i,:,:], xlabel="cell j", lw=1.5, label=alglabel,
-            title = latexstring("v = $(vs[i]),\\, w = 1.0"))
+        p = plot(xs, entangles[i,:,:], lw=1.5, label=alglabel,
+            ylim=(0.0,1.0), title = latexstring("v = $(vls[i]),\\, w = 1.0"),
+            legend_position=(i==5 ? :top : :bottom))
         if i==1 || i==3
             ylabel!(L"S(j)")
+        end
+        if i==3 || i==5
+            xlabel!("cell "*(L"j"))
         end
         push!(ps, p)
     end
     P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600))
 
-    savefig(P, "MajoranaChain/majoranafigs/mfssh_entangle.pdf")
+    #savefig(P, "SSHChain/sshfigs/ssh_ent.pdf")
 end

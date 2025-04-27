@@ -1,4 +1,3 @@
-using Random
 using HDF5
 using Base.Threads
 include("sshmodel.jl")
@@ -6,11 +5,8 @@ include("../ExactDiagonal.jl")
 include("../entanglement.jl")
 
 nthreads() = 8
-nthreadpools() = 2
+nthreadpools() = 1
 BLAS.set_num_threads(4)
-
-seeds = rand(RandomDevice(), UInt128)
-rngs = [MersenneTwister(seeds + 1<<tid) for tid in 1:nthreads()] 
 
 
 let 
@@ -18,8 +14,8 @@ let
     Lhalf = L ÷ 2
     b = Lhalf
     num, nalg = 50, 6
-    v, w = 0.5, 1.0
-    vs = LinRange(0.0,2.5, num+1)
+    w = 1.0
+    vs = LinRange(0.0, 2.5, num+1)
 
     sw = Sweeps(10)
     setmaxdim!(sw, 200)
@@ -38,13 +34,12 @@ let
 
     @threads for i = 1:num+1
         v = vs[i]
-        rng = rngs[threadid()]
 
-        fcpsi0 = random_mps(rng, fcsites; linkdims=D)
-        fmpsi0 = random_mps(rng, fmsites; linkdims=D)
-        mmpsi0 = random_mps(rng, mmsites; linkdims=D)
-        m2psi0 = random_mps(rng, mosites, mesites; linkdims=D)
-        jwpsi0 = random_mps(rng, jwsites; linkdims=D)
+        fcpsi0 = random_mps(fcsites; linkdims=D)
+        fmpsi0 = random_mps(fmsites; linkdims=D)
+        mmpsi0 = random_mps(mmsites; linkdims=D)
+        mpsi0 = random_mps(mosites, mesites; linkdims=D)
+        jwpsi0 = random_mps(jwsites; linkdims=D)
 
         fmobs = BondsObserver()
         fcobs = BondsObserver()
@@ -73,7 +68,7 @@ let
         mmentropy = entangle_entropy(mmpsi, b)
         mmbond = maximum(mmobs.bonds)
 
-        menegy, mpsis = dmrg(H_origin2, m2psi0, sw; observer=mobs, outputlevel=0)
+        menegy, mpsis = dmrg(H_origin2, mpsi0, sw; observer=mobs, outputlevel=0)
         mentropy = entangle_entropy(mpsis, b ÷ 2)
         mbond = maximum(mobs.bonds)
         

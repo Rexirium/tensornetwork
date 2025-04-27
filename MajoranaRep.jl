@@ -1,4 +1,5 @@
 using ITensors, ITensorMPS
+using Random
 
 function ITensors.space(
     ::SiteType"MF"
@@ -57,6 +58,7 @@ function ITensorMPS.random_mps(siteo::Vector{<:Index}, sitee::Vector{<:Index}; l
   psie = random_mps(sitee; linkdims)
   return [psio, psie]
 end
+
 function ITensorMPS.random_mps(rng::Random.AbstractRNG, siteo::Vector{<:Index}, sitee::Vector{<:Index}; linkdims=1)
   psio = random_mps(rng, siteo; linkdims)
   psie = random_mps(rng, sitee; linkdims)

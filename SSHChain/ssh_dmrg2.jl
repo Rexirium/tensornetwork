@@ -1,4 +1,3 @@
-using Random
 using HDF5
 using Base.Threads
 using BenchmarkTools
@@ -7,20 +6,17 @@ include("../ExactDiagonal.jl")
 include("../entanglement.jl")
 
 nthreads() = 4
-nthreadpools() = 2
+nthreadpools() = 1
 BLAS.set_num_threads(4)
-
-seeds = rand(RandomDevice(), UInt128)
-rngs = [MersenneTwister(seeds + 1<<tid) for tid in 1:nthreads()] 
 
 
 let 
     L, D = 40, 4
     Lhalf = L ÷ 2
     nalg = 5
-    v, w = 0.5, 1.0
-    vs = [0.0, 0.5, 1.0, 1.5,  2.0]
-    ns = length(vs)
+    w = 1.0
+    vls = [0.0, 0.5, 1.0, 1.5,  2.0]
+    ns = length(vls)
 
     sw = Sweeps(10)
     setmaxdim!(sw, 300)
@@ -39,14 +35,13 @@ let
     usespace = zeros(ns, nalg) 
 
     @threads for i = 1:ns
-        v = vs[i]
-        rng = rngs[threadid()]
+        v = vls[i]
         #initial states
-        fcpsi0 = random_mps(rng, fcsites; linkdims=D)
-        fmpsi0 = random_mps(rng, fmsites; linkdims=D)
-        mmpsi0 = random_mps(rng, mmsites; linkdims=D)
-        mpsi0 = random_mps(rng, mosites, mesites; linkdims=D)
-        jwpsi0 = random_mps(rng, jwsites; linkdims=D)
+        fcpsi0 = random_mps(fcsites; linkdims=D)
+        fmpsi0 = random_mps(fmsites; linkdims=D)
+        mmpsi0 = random_mps(mmsites; linkdims=D)
+        mpsi0 = random_mps(mosites, mesites; linkdims=D)
+        jwpsi0 = random_mps(jwsites; linkdims=D)
         # make hamiltonian MPO
         H_fermion = ssh_fermion(fcsites, v, w)
         H_transf = ssh_transf(fmsites, v, w)
@@ -73,7 +68,7 @@ let
     end
 
     h5open("SSHChain/sshbenchdata.h5", "w") do file
-        write(file, "vs", vs)
+        write(file, "vls", vls)
         write(file, "entangles", entangles)
         write(file, "runtime", runtime)
         write(file, "usespace", usespace)
