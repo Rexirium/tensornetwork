@@ -69,7 +69,7 @@ function ITensorMPS.dmrg(Hs::Vector{MPO}, psi0s::Vector{MPS}, sweeps::Sweeps; kw
   ns = length(psi0s)
   Es = 0.0
   psis = MPS[]
-  for i = 1:ns
+  Threads.@threads for i = 1:ns
     E, psi = dmrg(Hs[i], psi0s[i], sweeps; kwargs...)
     Es += E
     push!(psis, psi)
