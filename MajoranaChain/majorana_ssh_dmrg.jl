@@ -43,7 +43,7 @@ let
         fobs = BondsObserver()
         jobs = BondsObserver()
 
-        denergy = sum(eigvals(HBdG, 1:L))./2
+        denergy = sum(eigvals(HBdG, 1:L)) ./2
         menergy ,mpsi = dmrg(H_majorana, mpsi0, sw; observer=mobs, eigsolve_krylovdim = krydim, outputlevel = 0 )
         fmenergy, fmpsi = dmrg(H_mfermion, fpsi0, sw; observer=fmobs, eigsolve_krylovdim = krydim, outputlevel = 0 )
         fcenergy, fcpsi = dmrg(H_cfermion, fpsi0, sw; observer=fobs, eigsolve_krylovdim = krydim, outputlevel = 0 )

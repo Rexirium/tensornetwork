@@ -59,7 +59,7 @@ function spectrum_BdG(A::AbstractMatrix, B::AbstractMatrix; retstate::Bool=true)
     size(A) == size(B) || error("incompactible size of A and B")
     Ls = size(A, 1)
     H = [A -conj(B); B -transpose(A)]
-    H = Hermitian(H)
+    H = Hermitian(H, :L)
     if retstate
         λ, T = eigen(H)
         U = T[1:Ls, Ls+1 : 2Ls]
@@ -161,9 +161,9 @@ function groundstate_energy(A::AbstractMatrix, B::AbstractMatrix)
     size(A) == size(B) || error("incompactible size of A and B")
     Ls = size(A, 1)
     H = [A -conj(B); B -transpose(A)]
-    H = Hermitian(H)
+    H = Hermitian(H, :L)
     spec = eigvals(H, 1:Ls)
-    return sum(spec)
+    return sum(spec)/2
 end
 # calculate the density on site i , cdag(i) c(i) , i<j
 function expectation(state::NumState, i::Int)

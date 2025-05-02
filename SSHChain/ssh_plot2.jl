@@ -3,7 +3,7 @@ using HDF5
 using LaTeXStrings
 using Plots
 default(
-    grid=true, 
+    grid=false, 
     titlelocation=:left,
     framestyle=:box,
     guidefontsize=14,
@@ -33,14 +33,14 @@ let
             ylim=(0.0,1.0), title = latexstring("v = $(vls[i]),\\, w = 1.0"),
             legend_position=(i==5 ? :top : :bottom))
         if i==1 || i==3
-            ylabel!(L"S(j)")
+            ylabel!(L"S(x)")
         end
         if i==3 || i==5
-            xlabel!("cell "*(L"j"))
+            xlabel!("cell "*(L"x"))
         end
         push!(ps, p)
     end
     P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600))
 
-    #savefig(P, "SSHChain/sshfigs/ssh_ent.pdf")
+    savefig(P, "SSHChain/sshfigs/ssh_ent.pdf")
 end

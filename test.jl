@@ -26,7 +26,7 @@ end
 
 function makeSSH(Ls::Int, t1::Number, t2::Number)
     arr = repeat([t1, t2], Int(Ls/2))[1:Ls-1]
-    H = diagm(1=>arr, -1=>conj(arr))
+    H = diagm(1=>arr)
     return Hermitian(H)
 end
 function makeSSH(s::Vector{<:Index}, t1::Number, t2::Number)
@@ -67,8 +67,10 @@ end
 
 let 
     # model setup
-    L, D = 10, 4
-    v, w = 0.0, 1.0
+    L, D = 16, 4
+    v, w = 0.2, 1.0
+    num = 100
+    vs = LinRange(0.0, 2.5, num+1)
     bs = range(0, L)
     center = L÷2
     # DMRG parameters and initialization
@@ -83,8 +85,15 @@ let
     mus =  zeros(L)
     tnn = repeat([v, w], center)[1: L-1]
     tnnn = zeros(L-2)
-    H = Hermitian(diagm(0=>mus, 1=>tnn, 2=>tnnn))
-    H_MPO = makeHamiltonian(sites, H)
+    H = makeSSH(L, v, w)
+    H_MPO = makeSSH(sites, v, w)
+
+    energies = zeros(num+1, L)
+    for i in 1:num+1
+        vx = vs[i]
+        Hx = makeSSH(L, vx, w)
+        energies[i,:] .= eigvals(Hx)
+    end
 
     energy_DMRG, psi_DMRG = dmrg(H_MPO, psi0, sw, observer = obs; eigsolve_krylovdim = krydim)
     energy_ED, psi_ED = groundstate(H)
@@ -111,7 +120,9 @@ let
     println("maxbond during DMRG is $maxbond")
 
     hm = heatmap(Matrix(H), yflip = true, xtick=false, ytick=false, title="hamiltonian")
-    sc = scatter(spectrum, xlabel = L"n", ylabel="energy", framestyle = :box, legend = false, title="spectrum")
+    sp = plot(vs, energies, xlabel = L"v/w", ylabel="energy",lw = 1, c=:black, framestyle = :box, 
+        legend = false, title="spectrum")
+    vline!([v],lw=1.5)
     b1 = bar(density_DMRG, ylabel = "density", ylim=(0.0, 1.0), xlim=(0.5, L+0.5),
         legend = false, framestyle = :box, color = :red, title = "DMRG density")
     b2 = bar(density_ED, xlabel = "site j", ylabel = "density", ylim=(0.0, 1.0), xlim=(0.5,L+0.5),
@@ -120,7 +131,7 @@ let
         label=["DMRG" "ED"], lw=2, title="entanglement entropy")
     pc = plot([corr_DMRG, corr_ED], xlabel="site j", xlim=(1, L), ylabel="C($center, j)", framestyle=:box,
         label=["DMRG" "ED"], lw=2, title="correlation")
-    plot(hm, sc, b1, b2, pl, pc, layout = @layout([a{0.4h} b{0.4h}; [c; d] [e; f]]), size = (1000, 800))
+    plot(hm, sp, b1, b2, pl, pc, layout = @layout([a{0.3h} b{0.3h}; [c; d] [e; f]]), size = (800, 800))
 end
 
 

@@ -1,7 +1,14 @@
 using LinearAlgebra
 using Plots, LaTeXStrings
 include("../ExactDiagonal.jl")
-#=
+default(
+    grid=true, 
+    framestyle=:box,
+    guidefontsize=14,
+    legendfontsize=13,
+    tickfontsize=10
+)
+
 let 
     L, num = 20, 50
     t, Δ = 1.0, 1.0
@@ -32,19 +39,19 @@ let
     legs_gs = reshape(legs_gs, 1, :)
     legs_ex = reshape(legs_ex, 1, :)
     colors = [:red :green :blue]
-    p1 = plot(mus, energies, framestyle=:box, leg=false, c=:black,
+    p1 = plot(mus, energies, leg=false, c=:black,
         xlabel=L"\mu", ylabel=L"E/t")
     vline!([2.0], line=(1,:dash))
 
-    p2 = plot(gsstates, framestyle=:box, lw=1.5, ylim=(-0.02,0.4), label=legs_gs, c=colors,
+    p2 = plot(gsstates, lw=1.5, ylim=(-0.02,0.4), label=legs_gs, c=colors,
     xlabel="site "*L"j", ylabel=L"n_j")
     plot!(exstates, line=(1.5, :dash), label=legs_ex, c=colors, leg=:top)
 
-    p = plot(p1, p2, layout=@layout([a b]), size=(800, 400))
-    savefig(p, "KitaevChain/figs/kitaev_spectrum.pdf")
+    p = plot(p1, p2, layout=@layout([a b]), size=(800, 400), leftmargin=4Plots.mm, bottommargin=3Plots.mm)
+    #savefig(p, "KitaevChain/kitaevfigs/kitaev_spectrum.pdf")
 end
-=#
 
+#=
 let
     L, num = 20, 50
     t, Δ = 1.0, 1.0
@@ -65,3 +72,4 @@ let
         xlabel=L"\mu", ylabel=L"E/t")
     vline!([2.0], line=(1,:dash))
 end
+=#
