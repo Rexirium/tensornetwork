@@ -48,6 +48,7 @@ let
         H_jordan = KitaevChain_jordan(jwsites, μ, t, Δ)
 
         denergy = groundstate_energy(A, B)
+
         fcenergy, fcpsi = dmrg(H_fermion, fcpsi0, sw; observer = fcobs, outputlevel=0)
         fcentropy = entangle_entropy(fcpsi, b)
         fcbond = maximum(fcobs.bonds)
@@ -56,21 +57,21 @@ let
         fmentropy = entangle_entropy(fmpsi, b)
         fmbond = maximum(fmobs.bonds)
 
-        mmenergy, mmpsi = dmrg(H_origin2, mmpsi0, sw; outputlevel=0)
+        mmenergy, mmpsi = dmrg(H_origin2, mmpsi0, sw; observer = mmobs, outputlevel=0)
         mmentropy = entangle_entropy(mmpsi, b)
         mmbond = maximum(mmobs.bonds)
 
-        jwenergy, jwpsi = dmrg(H_jordan, jwpsi0, sw; outputlevel=0)
-        jwentropy = entangle_entropy(mmpsi, b)
-        jwbond = maximum(mmobs.bonds)
+        jwenergy, jwpsi = dmrg(H_jordan, jwpsi0, sw; observer = jwobs, outputlevel=0)
+        jwentropy = entangle_entropy(jwpsi, b)
+        jwbond = maximum(jwobs.bonds)
 
         energies[i,:] .= [fcenergy, fmenergy, mmenergy, jwenergy, denergy]
         entropies[i, :] .= [fcentropy, fmentropy, mmentropy, jwentropy]
         maxbonds[i,:] .= [fcbond, fmbond, mmbond, jwbond]
     end
 
-    h5open("KitaecChain/kcplotdata.h5", "w") do file
-        write(file, "vs", collect(mus))
+    h5open("KitaevChain/kcplotdata.h5", "w") do file
+        write(file, "mus", collect(mus))
         write(file, "energies", energies)
         write(file, "entropies", entropies)
         write(file, "maxbonds", maxbonds)
