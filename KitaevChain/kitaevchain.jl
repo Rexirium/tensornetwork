@@ -92,6 +92,17 @@ function KitaevChain_origin2(s::Vector{<:Index}, mu::Real, tt::Real, delta::Real
     return [Ho, He]
 end
 
+function KitaevChain_simpl(s::Vector{<:Index}, mu::Real, tt::Real)
+    Ls = length(s)
+    os = OpSum()
+    for j in 1:Ls-1
+        os += -im*mu/2, "Gamma1", j, "Gamma2", j
+        os += im*tt, "Gamma2", j, "Gamma1", j+1
+    end
+    os += -im*mu/2, "Gamma1", Ls, "Gamma2", Ls
+    return MPO(os, s)
+end
+
 function KitaevChain_jordan(s::Vector{<:Index}, mu::Real, tt::Number, delta::Number)
     Ls = length(s)
     os = OpSum()

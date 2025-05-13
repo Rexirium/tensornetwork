@@ -32,20 +32,20 @@ let
     colors = palette(:default)[[1 2 3 4 5]]
     
     b1 = bar(vcoord, runtime, xlabel=L"v/w", ylabel= "runtime (s)", yscale=:log10, ylim=(1,200),
-        bar_width = 0.05, width=0.5, label=alglabel, legend_position=:topleft)
+        bar_width = 0.05, width=0.5, label=alglabel, legend_position=:topleft, leftmargin=2Plots.mm)
 
     plot!(twinx(), vs, maxbonds, ylim=(1,200), lw=1.5, label=alglabel, yscale=:log10,
         ylabel=L"D", legend_position=:topright)
-    #savefig(b1, "SSHChain/sshfigs/ssh_bench1.pdf")
+    savefig(b1, "SSHChain/sshfigs/ssh_bench1.svg")
    
 
 
-    #=
+
     b2 = bar(vcoord, usespace, xlabel=L"v/w", ylabel= "space (MB)", yscale=:log10, ylim=(10^3, 10^6),
-        bar_width = 0.05, width=0.5, label=alglabel, legend_position=:topleft)
+        bar_width = 0.05, width=0.5, label=alglabel, legend_position=:topleft, leftmargin=2Plots.mm)
     plot!(twinx(), vs, maxbonds, lw=1.5, label=alglabel, yscale=:log10, ylim=(1,200),
          ylabel=L"D", legend_position=:topright)
     
-    #savefig(b2, "SSHChain/sshfigs/ssh_bench2.pdf")
-   =#
+    savefig(b2, "SSHChain/sshfigs/ssh_bench2.svg")
+ 
 end

@@ -33,14 +33,15 @@ let
             ylim=(0.0,1.0), title = latexstring("v = $(vls[i]),\\, w = 1.0"),
             legend_position=(i==5 ? :top : :bottom))
         if i==1 || i==3
-            ylabel!(L"S(x)")
+            ylabel!(L"S(j)")
         end
         if i==3 || i==5
-            xlabel!("cell "*(L"x"))
+            xlabel!("cell "*(L"j"))
         end
         push!(ps, p)
     end
-    P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600))
+    P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600),
+        leftmargin=2Plots.mm,bottommrgin=0.1Plots.mm)
 
-    savefig(P, "SSHChain/sshfigs/ssh_ent.pdf")
+    savefig(P, "SSHChain/sshfigs/ssh_ent.svg")
 end

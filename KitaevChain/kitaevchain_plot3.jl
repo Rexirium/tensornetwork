@@ -21,24 +21,24 @@ let
     xs = range(1, L)
 
     alglabel = ["CF" "MF(trans)" "MF(origin)" "JW" ]
-    ylims = [(0.3,0.1),(0.3,0.7),(0.5,0.9),(0.8,1.0),(0.8,1.0)]
+    ylims = [(0.2,0.6),(0.3,0.7),(0.6,1.0),(0.8,1.0),(0.8,1.0)]
     ps = []
     for i in 1:ns
-        if i==1
+        if i==4
             continue
         end
         p = plot(xs, correlations[i,:,:], lw=1.5, label=alglabel,
              ylim=ylims[i], title = latexstring("\\mu = $(muls[i]),\\, t= \\Delta = 1.0")
              )
-        if i==2 || i==4
-            ylabel!(L"C(20,x)")
+        if i==1 || i==3
+            ylabel!(L"C(20,j)")
         end
-        if i==4 || i==5
-            xlabel!("site "*(L"x"))
+        if i==3 || i==5
+            xlabel!("site "*(L"j"))
         end
         push!(ps, p)
     end
-    P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600))
+    P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600), leftmargin=2Plots.mm)
 
-    savefig(P, "KitaevChain/kitaevfigs/kc_corr.pdf")
+    savefig(P, "KitaevChain/kitaevfigs/kc_corr.svg")
 end

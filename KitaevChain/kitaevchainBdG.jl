@@ -48,7 +48,7 @@ let
     plot!(exstates, line=(1.5, :dash), label=legs_ex, c=colors, leg=:top)
 
     p = plot(p1, p2, layout=@layout([a b]), size=(800, 400), leftmargin=4Plots.mm, bottommargin=3Plots.mm)
-    #savefig(p, "KitaevChain/kitaevfigs/kitaev_spectrum.pdf")
+    savefig(p, "KitaevChain/kitaevfigs/kitaev_spectrum.svg")
 end
 
 #=

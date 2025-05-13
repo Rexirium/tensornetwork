@@ -47,7 +47,7 @@ function numconserve_basis(Ls::Int, Ns::Int)
     return basis
 end
 
-function spectrum_BdG(H::AbstractMatrix; retstate::Bool=true)
+function spectrum(H::AbstractMatrix; retstate::Bool=true)
     if retstate
         return eigen(H)
     else
@@ -66,8 +66,7 @@ function spectrum_BdG(A::AbstractMatrix, B::AbstractMatrix; retstate::Bool=true)
         V = T[(Ls+1): 2Ls, Ls+1 : 2Ls]
         return λ, U, V
     else
-        spec = eigvals(H)
-        return spec
+        return eigvals(H)
     end
 end
 

@@ -38,6 +38,7 @@ let
     plot!(twinx(), vss, maxbonds, ylim=(0,120), lw=1.5, label=alglabel, 
         c=colors, ylabel=L"D", legend_position=:topright)
     
-    P = plot(b1, b2, layout=@layout([a b]), size=(700, 400))
-    #savefig(P, "MajoranaChain/majoranafigs/mfssh_bench.pdf")
+    P = plot(b1, b2, layout=@layout([a b]), size=(700, 400),
+        leftmargin=2Plots.mm,bottommargin=1.5Plots.mm)
+    savefig(P, "MajoranaChain/majoranafigs/mfssh_bench.svg")
 end

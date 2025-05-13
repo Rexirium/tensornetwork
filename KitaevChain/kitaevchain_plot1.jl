@@ -12,7 +12,7 @@ default(
 )
 
 let 
-    file = h5open("KitaevChain/kcplotdata.h5", "r")
+    file = h5open("KitaevChain/kcplotdata2.h5", "r")
     mus = read(file, "mus")
     energies = read(file, "energies")
     entropies = read(file, "entropies")
@@ -27,19 +27,20 @@ let
     end
 
     alglabel = ["CF" "MF(trans)" "MF(origin)" "JW" ]
-    alllabel = hcat(alglabel, "ED")
+    alllabel = hcat(alglabel, "BdG")
 
     p1 = plot(mus, energies, xtick=:in, ylabel=L"E", lw = 2,  label = alllabel)
     vline!([2.0], line=(1,:dash), label=false,legend_position=:bottomleft)
 
-    p1e = plot(mus, energyerr, xlabel=L"\mu", ylabel="err",yscale=:log10, ylim=(1.0E-14,1.0E-4),
+    p1e = plot(mus, energyerr, xlabel=L"\mu/t", ylabel="err",yscale=:log10, ylim=(1.0E-14,1.0E-4),
         lw =2, label=alglabel)
     vline!([2.0], line=(1,:dash), label=false)
 
-    p2 = plot(mus, entropies, xlabel=L"\mu", ylabel=L"S_\mathrm{vN}", 
+    p2 = plot(mus, entropies, xlabel=L"\mu/t", ylabel=L"S_\mathrm{vN}", 
         lw=2, label=alglabel)
     vline!([2.0], line=(1,:dash), label=false)
 
-    P = plot(p1, p1e, p2, layout = @layout([[a{0.55h};b] c]), size=(800, 450), title=["a)" "b)" "c)"])
-    savefig(P, "KitaevChain/kitaevfigs/kc_en.pdf")
+    P = plot(p1, p1e, p2, layout = @layout([[a{0.55h};b] c]), size=(800, 450), title=["a)" "b)" "c)"], 
+        leftmargin=2Plots.mm, bottommargin=2.4Plots.mm)
+    savefig(P, "KitaevChain/kitaevfigs/kc_en.svg")
 end

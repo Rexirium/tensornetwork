@@ -12,7 +12,7 @@ default(
 )
 
 let 
-    file = h5open("KitaevChain/kcbenchdata.h5", "r")
+    file = h5open("KitaevChain/kcbenchdata2.h5", "r")
     muls = read(file, "muls")
     entangles = read(file, "entangles")
     close(file)
@@ -22,7 +22,7 @@ let
     xs = range(0, L)
 
     alglabel = ["CF" "MF(trans)" "MF(origin)" "JW" ]
-    ylims = [(0.0,0.1),(0.0,0.1),(0.0,0.6),(0.0,0.3),(0.0,0.3)]
+    ylims = [(0.0,0.8),(0.0,0.8),(0.0,0.6),(0.0,0.3),(0.0,0.3)]
     ps = []
     for i in 1:ns
         if i==1
@@ -32,14 +32,14 @@ let
             ylim=ylims[i], title = latexstring("\\mu = $(muls[i]),\\, t= \\Delta = 1.0"),
             legend_position=(i==3 ? :bottom : :topright) )
         if i==2 || i==4
-            ylabel!(L"S(x)")
+            ylabel!(L"S(j)")
         end
         if i==4 || i==5
-            xlabel!("site "*(L"x"))
+            xlabel!("site "*(L"j"))
         end
         push!(ps, p)
     end
-    P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600))
+    P = plot(ps... , layout= @layout([a b; c d]), size = (800, 600), leftmargin=2Plots.mm)
 
-    #savefig(P, "KitaevChain/kitaevfigs/kc_ent.pdf")
+    savefig(P, "KitaevChain/kitaevfigs/kc_ent.svg")
 end

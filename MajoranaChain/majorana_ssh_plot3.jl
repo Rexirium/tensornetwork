@@ -38,7 +38,7 @@ let
     ylims =[(-0.001, 0.05), (-0.01, 0.55), (-0.01, 0.25) ]
     ps1 = []
     for i in 1:ns
-        p = plot(entangles[i,:,:], xlabel="site j", ylim=ylims[i], lw=2, label=alglabel,
+        p = plot(entangles[i,:,:], xlabel="site "*L"j", ylim=ylims[i], lw=2, label=alglabel,
             title = latexstring("v = $(vs[i]),\\, w = 1.0"), leg =(i==ns))
         if i==1
             ylabel!(L"S(j)")
@@ -50,14 +50,15 @@ let
     ps2 = []
     colors = palette(:default)[[1 2 4]]
     for i in 1:ns
-        p = plot(entangleerr[i,:,:], xlabel="site j", ylim=(1.0E-16,1E-8), lw=2, label=fewlabel,
+        p = plot(entangleerr[i,:,:], xlabel="site "*L"j", ylim=(1.0E-16,1E-8), lw=2, label=fewlabel,
         yscale=:log10, c=colors, leg= (i==ns) )
         if i==1
-            ylabel!(L"\epsilon")
+            ylabel!("err")
         end
         push!(ps2, p)
     end
     p2 = plot(ps2... , layout= @layout([a b c]), size = (800, 250))
-    P = plot(p1, p2, layout=@layout([a; b{0.45h}]), size=(800, 500))
-    savefig(P, "MajoranaChain/majoranafigs/mfssh_entangle.pdf")
+    P = plot(p1, p2, layout=@layout([a; b{0.45h}]), size=(800, 500),
+        leftmargin=2.4Plots.mm,bottommargin=1.5Plots.mm)
+    savefig(P, "MajoranaChain/majoranafigs/mfssh_entangle.svg")
 end

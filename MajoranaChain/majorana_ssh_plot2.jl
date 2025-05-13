@@ -38,7 +38,7 @@ let
 
     ps1 = []
     for i in 1:ns
-        p = plot(correlations[i,:,:], xlabel="site j", ylim = (-0.02,0.4), lw=2, label=alglabel,
+        p = plot(correlations[i,:,:], xlabel="site "*L"j", ylim = (-0.02,0.4), lw=2, label=alglabel,
             title = latexstring("v = $(vs[i]),\\, w = 1.0"))
         if i==1
             ylabel!(L"C(20,j)")
@@ -50,14 +50,15 @@ let
     ps2 = []
     colors = palette(:default)[[1 2 4]]
     for i in 1:ns
-        p = plot(correlationerr[i,:,:], xlabel="site j", ylim=(1.0E-15,2.5E-9), lw=2, label=fewlabel,
+        p = plot(correlationerr[i,:,:], xlabel="site "*L"j", ylim=(1.0E-15,2.5E-9), lw=2, label=fewlabel,
         yscale=:log10, c=colors, leg= (i==ns) )
         if i==1
-            ylabel!(L"\epsilon")
+            ylabel!("err")
         end
         push!(ps2, p)
     end
     p2 = plot(ps2... , layout= @layout([a b c]), size = (800, 250))
-    P = plot(p1, p2, layout=@layout([a; b{0.45h}]), size=(800, 500))
-    savefig(P, "MajoranaChain/majoranafigs/mfssh_corr.pdf")
+    P = plot(p1, p2, layout=@layout([a; b{0.45h}]), size=(800, 500),
+        leftmargin=2Plots.mm, bottommargin=2Plots.mm)
+    savefig(P, "MajoranaChain/majoranafigs/mfssh_corr.svg")
 end

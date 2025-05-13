@@ -48,7 +48,7 @@ p4=let
     b2 = bar(states[:, ls[2]], xtick = false, framestyle = :box, ylim = (-0.4, 0.7), 
         ytick =[-0.4, 0.0, 0.6], legend =false, color =colors)
     annotate!([(30, 0.5, "ϵ = -0.0")])
-    b3 = bar(states[:, ls[3]], xlabel = "site "*(L"n"),framestyle = :box, ylim =(-0.3, 0.4), 
+    b3 = bar(states[:, ls[3]], xlabel = "site "*(L"j"),framestyle = :box, ylim =(-0.3, 0.4), 
         ytick =[-0.3, 0.0, 0.3], legend = false, color = colors)
     annotate!([(30, 0.3, "ϵ = -1.4")])
     plot(b1, b2, b3, layout = lay)
@@ -56,5 +56,5 @@ end
 
 layout=@layout([a{0.45h} b{0.45h};c d])
 P = plot(p1, p2, p3, p4, layout=layout, size=(800, 600))
-#savefig(P, "SSH_Model/sshfigs/ssh_spectrum.pdf")
+savefig(P, "SSH_Model/sshfigs/ssh_spectrum.svg")
 
