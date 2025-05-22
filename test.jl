@@ -68,7 +68,7 @@ end
 let 
     # model setup
     L, D = 16, 4
-    v, w = 0.2, 1.0
+    v, w = 0.0, 1.0
     num = 100
     vs = LinRange(0.0, 2.5, num+1)
     bs = range(0, L)
@@ -100,7 +100,7 @@ let
     deg = length(psi_ED)
     d = rand(RandomDevice(),1:deg)
     maxbond = max((obs.bonds)...)
-    spectrum = spectrum_BdG(H, retstate = false)
+    spec = spectrum(H, retstate = false)
 
     density_DMRG = expect(psi_DMRG, "N")
     density_ED = density_vec(psi_ED[d])
